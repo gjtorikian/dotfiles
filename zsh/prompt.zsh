@@ -1,1 +1,1 @@
-setopt promptsubst
+prompt pure
