@@ -1,5 +1,2 @@
 git/gitconfig.local.symlink
-
-passwordz/
-
-script/strap
+system/ssh.config
