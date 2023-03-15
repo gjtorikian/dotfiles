@@ -1,0 +1,29 @@
+[init]
+  defaultBranch = main
+  templatedir = ~/.git_template
+[push]
+  default = current
+  autoSetupRemote = true
+[color]
+  ui = auto
+[core]
+  excludesfile = ~/.gitignore
+  autocrlf = input
+  editor = code --wait
+[commit]
+  template = ~/.gitmessage
+  gpgsign = true
+[fetch]
+  prune = true
+[rebase]
+  autosquash = true
+[include]
+  path = ~/.gitconfig.local
+[diff]
+  colorMoved = zebra
+[pull]
+  rebase = true
+[gpg]
+  format = ssh
+[gpg "ssh"]
+  program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
