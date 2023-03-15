@@ -48,3 +48,4 @@ bindkey "^[[B" down-line-or-beginning-search # Down
 
 # set up prompts
 autoload -U promptinit; promptinit
+prompt pure

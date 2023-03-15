@@ -6,8 +6,10 @@ colors
 export CLICOLOR=true
 
 # fpath=($ZSH/functions $fpath)
-
 # autoload -U $ZSH/functions/*(:t)
+
+fpath+=("$(brew --prefix)/share/zsh/site-functions")
+autoload -U "$(brew --prefix)/share/zsh/site-functions"/*(:t)
 
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
