@@ -5,9 +5,16 @@
 # clear-port 3000
 
 if [ -n "$1" ]; then
-  port_num="$(lsof -ti4TCP:"$1")"
+  port_nums="$(lsof -ti4TCP:"$1")"
   if [ $? -eq 0 ]; then
-    kill "$port_num"
+    # https://unix.stackexchange.com/a/628576
+    set -o noglob
+    IFS=$'\n' ports=($port_nums)
+    set +o noglob
+    for port_num in "${ports[@]}"
+    do
+      kill "$port_num"
+    done
   fi
 else
   echo >&2 Usage: clear-port port-number
