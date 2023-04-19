@@ -21,6 +21,13 @@
   path = ~/.gitconfig.local
 [diff]
   colorMoved = zebra
+  tool = vscode
+[merge]
+    tool = vscode
+[difftool "vscode"]
+    cmd = "code --wait --diff $LOCAL $REMOTE"
+[mergetool "vscode"]
+    cmd = "code --wait $MERGED"
 [pull]
   rebase = true
 [gpg]
