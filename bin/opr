@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+op run --env-file=".env" -- $@
