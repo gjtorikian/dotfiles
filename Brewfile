@@ -29,20 +29,17 @@ brew "apache-arrow"
 brew "arduino-cli"
 brew "arm-linux-gnueabihf-binutils"
 brew "astyle"
-brew "gdbm"
 brew "gettext"
 brew "glib"
-brew "libffi", link: true
-brew "readline", link: true
-brew "python@3.9"
 brew "atk"
 brew "autoconf"
 brew "automake"
+brew "readline", link: true
 brew "docutils"
 brew "awscli"
+brew "gdbm"
 brew "python@3.10"
 brew "azure-cli"
-brew "pkg-config"
 brew "icu4c"
 brew "harfbuzz"
 brew "bfg"
@@ -106,6 +103,7 @@ brew "go"
 brew "glide"
 brew "gnupg"
 brew "gnuplot"
+brew "pkg-config"
 brew "gobject-introspection"
 brew "gox"
 brew "gradle"
@@ -113,34 +111,35 @@ brew "librsvg"
 brew "graphviz"
 brew "grc"
 brew "groff"
-brew "gstreamer"
+brew "gtk+3"
+brew "libsoup"
+brew "py3cairo"
+brew "pygobject3"
+brew "gstreamer", link: false
 brew "gst-plugins-base"
 brew "libnice"
 brew "gst-plugins-bad"
-brew "gtk+3"
-brew "libsoup"
 brew "gst-plugins-good", link: false
 brew "gst-plugins-ugly"
 brew "handbrake", link: false
 brew "htop"
 brew "hub"
 brew "hugo"
-brew "influxdb", restart_service: true
+brew "influxdb"
 brew "influxdb-cli"
 brew "intltool"
 brew "iperf"
 brew "jemalloc"
 brew "jq"
 brew "kotlin"
-brew "launch_socket_server", restart_service: true
-brew "launchdns"
 brew "lcov"
 brew "libdvdcss"
+brew "libffi", link: true
 brew "libproxy"
 brew "libxcrypt"
 brew "libyaml"
 brew "llvm"
-brew "logrotate"
+brew "logrotate", restart_service: true
 brew "mas"
 brew "media-info"
 brew "memcached", restart_service: true
@@ -150,7 +149,7 @@ brew "qt"
 brew "mkvtoolnix"
 brew "mongosh"
 brew "zlib"
-brew "mysql", restart_service: true
+brew "mysql"
 brew "nghttp2"
 brew "nginx"
 brew "nmap"
@@ -161,18 +160,19 @@ brew "nodenv"
 brew "overmind"
 brew "p7zip"
 brew "pandoc"
+brew "postgresql@14", restart_service: true
+brew "pgroonga"
 brew "pidof"
 brew "pinentry-mac"
 brew "pmd"
 brew "poppler-qt5"
-brew "postgresql@14", restart_service: true
 brew "postgis"
 brew "potrace"
 brew "pulseaudio"
-brew "py3cairo"
+brew "pure"
 brew "pyenv"
 brew "pyenv-virtualenv"
-brew "pygobject3"
+brew "python@3.9"
 brew "ragel"
 brew "ruby-build"
 brew "rbenv"
@@ -185,10 +185,8 @@ brew "shadowenv"
 brew "shairport-sync"
 brew "socat"
 brew "softhsm"
-brew "solana"
 brew "squashfs"
 brew "swiftformat"
-brew "telegraf", restart_service: true
 brew "telnet"
 brew "the_silver_searcher"
 brew "tree"
@@ -202,64 +200,48 @@ brew "zsh"
 brew "zsh-completions"
 brew "goreleaser/tap/goreleaser"
 brew "romkatv/powerlevel10k/powerlevel10k"
-brew "shopify/shopify/toxiproxy"
 brew "vitorgalvao/tiny-scripts/cask-repair"
-cask "1password"
 cask "1password-cli"
 cask "docker"
 cask "dotnet"
-cask "dropbox"
 cask "encryptme"
 cask "epub-to-pdf"
 cask "flux"
 cask "font-fira-code"
-cask "font-fira-code-nerd-font"
 cask "google-chrome"
 cask "google-cloud-sdk"
-cask "gpg-suite"
 cask "graphiql"
 cask "handbrake"
 cask "inso"
 cask "insomnia"
-cask "iterm2"
-cask "launchcontrol"
-cask "licecap"
-cask "makemkv"
 cask "marmaduke-chromium"
-cask "mysqlworkbench"
 cask "ngrok"
-cask "openmtp"
-cask "skype"
-cask "spotify"
-cask "sublime-text"
 cask "transmission"
 cask "viscosity"
-cask "visual-studio-code"
-cask "vlc"
 cask "vmware-fusion"
 cask "wkhtmltopdf"
 cask "xquartz"
-mas "1Password for Safari", id: 1569813296
-mas "Amphetamine", id: 937984704
-mas "Cyberduck", id: 409222199
-mas "Developer", id: 640199958
-mas "GIF Brewery 3", id: 1081413713
-mas "Hex Fiend", id: 1342896380
-mas "iMovie", id: 408981434
-mas "Instapaper Save", id: 1481302432
-mas "Keynote", id: 409183694
-mas "Kindle", id: 405399194
-mas "Microsoft Excel", id: 462058435
-mas "Microsoft Word", id: 462054704
-mas "Moom", id: 419330170
-mas "Numbers", id: 409203825
-mas "Pages", id: 409201541
-mas "Pixelmator Pro", id: 1289583905
-mas "Scrivener", id: 1310686187
-mas "Simple Comic", id: 1497435571
-mas "Slack", id: 803453959
-mas "Snagit 2022", id: 1564091330
-mas "Textual IRC Client", id: 1262957439
-mas "Userscripts", id: 1463298887
-mas "WhatsApp", id: 1147396723
-mas "Xcode", id: 497799835
+mas "1Password for Safari", id: 1_569_813_296
+mas "Amphetamine", id: 937_984_704
+mas "Cyberduck", id: 409_222_199
+mas "Developer", id: 640_199_958
+mas "GIF Brewery 3", id: 1_081_413_713
+mas "Hex Fiend", id: 1_342_896_380
+mas "iMovie", id: 408_981_434
+mas "Instapaper Save", id: 1_481_302_432
+mas "Keynote", id: 409_183_694
+mas "Kindle", id: 405_399_194
+mas "Microsoft Excel", id: 462_058_435
+mas "Microsoft Word", id: 462_054_704
+mas "Moom", id: 419_330_170
+mas "Numbers", id: 409_203_825
+mas "Pages", id: 409_201_541
+mas "Pixelmator Pro", id: 1_289_583_905
+mas "Scrivener", id: 1_310_686_187
+mas "Simple Comic", id: 1_497_435_571
+mas "Slack", id: 803_453_959
+mas "Snagit 2022", id: 1_564_091_330
+mas "Textual IRC Client", id: 1_262_957_439
+mas "Userscripts", id: 1_463_298_887
+mas "WhatsApp", id: 1_147_396_723
+mas "Xcode", id: 497_799_835
