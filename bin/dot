@@ -50,6 +50,13 @@ $ZSH/homebrew/install.sh 2>&1
 echo "› brew update"
 brew update
 
+# Add brews
+brew bundle --file=$ZSH/Brewfile
+
 # Install software
 echo "› $ZSH/script/install"
 $ZSH/script/install
+
+# Update dock
+$ZSH/macos/dock.sh
+
