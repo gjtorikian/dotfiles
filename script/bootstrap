@@ -62,13 +62,6 @@ link_file () {
 
       local currentSrc="$(readlink $dst)"
 
-      if [ "$currentSrc" == "$src" ]
-      then
-
-        skip=true;
-
-      else
-
         user "File already exists: $dst ($(basename "$src")), what do you want to do?\n\
         [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
         read -n 1 action
@@ -90,7 +83,6 @@ link_file () {
             ;;
         esac
 
-      fi
 
     fi
 
@@ -130,7 +122,16 @@ install_dotfiles () {
 
   for src in $(find -H "$DOTFILES_ROOT" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
   do
-    dst="$HOME/.$(basename "${src%.*}")"
+    filename=".$(basename "${src%.*}")"
+    dst="$HOME/$filename"
+
+    # .ssh dir needs to be nested
+    if [[ $src == *".ssh"* ]]; then
+      filename="${filename:1}"
+      mkdir -p "$HOME/.ssh"
+      link_file "$src" "$HOME/.ssh/$filename"
+      continue
+    fi
     link_file "$src" "$dst"
   done
 }
