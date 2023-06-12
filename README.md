@@ -59,6 +59,8 @@ There's a few special files in the hierarchy.
 13. Open Safari
     1. Disable Autofill
 14. `cd ~/.dotfiles; macos/restore_backups.sh`
+15. Set up ngrok auth: https://dashboard.ngrok.com/get-started/your-authtoken
+16. Run `gh extension install actions/gh-actions-cache`
 
 ## Thanks
 
