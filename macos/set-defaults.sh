@@ -70,6 +70,9 @@ defaults write com.apple.DiskUtility DUDebugMenuEnabled -bool true
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
 
+# Disable "Click wallpaper to reveal desktop"
+defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+
 ###############################################################################
 # Finder                                                                      #
 ###############################################################################
