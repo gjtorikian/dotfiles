@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+CMD="$@"
+echo "redirecting \`$CMD\` to out.log and error.log"
+"$@" > out.log 2>error.log
