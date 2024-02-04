@@ -1,1 +1,6 @@
 alias be="bundle exec"
+alias brt="bin/rails test"
+alias cbrt="CI=1 bin/rails test"
+alias dcbrt="DEBUG=1 CI=1 bin/rails test"
+alias rt="rake test"
+alias drt="DEBUG=1 rake test"
