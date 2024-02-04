@@ -1,1 +1,1 @@
-export PATH="$(brew --prefix postgresql@15)/bin:$PATH"
+export PATH="$(brew --prefix postgresql@16)/bin:$PATH"
