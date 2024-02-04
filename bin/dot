@@ -60,3 +60,16 @@ $ZSH/script/install
 # Update dock
 $ZSH/macos/dock.sh
 
+# configure poetry
+poetry config virtualenvs.in-project true
+
+cat > $(pyenv root)/default-packages<< EOF
+pipx # Install CLI tools
+poetry # Install application dependencies
+nox # Run tests in sandboxed environments against different versions of python
+tox # Same, but with a `.ini` config interface (installed for historical reasons)
+ipython # A way better REPL
+mypy # Like sorbet, typechecking for Python
+black # formatterzzz
+ruff # Rust-based python linter and formatter
+EOF
