@@ -4,7 +4,7 @@ Your dotfiles are how you personalize your system. These are mine.
 
 ## Components
 
-There's a few special files in the hierarchy.
+There are a few special files in the hierarchy.
 
 - _bin/_: Anything in `bin/` will get added to your `$PATH` and be made
   available everywhere.
@@ -41,7 +41,7 @@ There's a few special files in the hierarchy.
      Enable Night Shift
 5. Change the Finder Sidebar preferences
    1. Add Home
-6. Sign into Dropbox
+6. Sign in to Dropbox
    1. Be prepared for lots of questions
 7. Open 1password
    1. Open Safari to link extension
@@ -67,7 +67,3 @@ There's a few special files in the hierarchy.
 - [@bswinnerton](https://www.github.com/bswinnerton)
 - [@holman](https://www.github.com/holman)
 - [@MikeMcQuaid](https://www.github.com/MikeMcQuaid)
-
-nodenv install 18.16.0
-nodenv global 18.16.0
-rbenv install
