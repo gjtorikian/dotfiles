@@ -1,23 +1,22 @@
+[include]
+  path = ~/.gitconfig.local
+[color]
+  ui = true
+[core]
+  excludesfile = ~/.gitignore
+  editor = "code --wait"
+[apply]
+  whitespace = nowarn
 [init]
   defaultBranch = main
 [push]
   default = current
   autoSetupRemote = true
-[color]
-  ui = auto
-[core]
-  excludesfile = ~/.gitignore
-  autocrlf = input
-  editor = "code --wait"
 [commit]
   template = ~/.gitmessage
   gpgsign = true
 [fetch]
   prune = true
-[rebase]
-  autosquash = true
-[include]
-  path = ~/.gitconfig.local
 [diff]
   colorMoved = zebra
   tool = vscode
@@ -26,9 +25,8 @@
 [difftool "vscode"]
     cmd = "code --wait --diff $LOCAL $REMOTE"
 [mergetool "vscode"]
+    keepBackup = false
     cmd = "code --wait $MERGED"
-[pull]
-	rebase = merges
 [gpg]
   format = ssh
 [gpg "ssh"]
@@ -38,3 +36,5 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[pull]
+	rebase = true
