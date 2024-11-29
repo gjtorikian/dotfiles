@@ -26,7 +26,7 @@ There are a few special files in the hierarchy.
 
 1. Clone the repository
 2. `script/bootstrap`
-   This will symlink the appropriate files in `.dotfiles` to your home directory. Everything is configured and tweaked within `~/.dotfiles`.
+   This will symlink the appropriate files in `.dotfiles` to your home directory. Everything is configured and tweaked within `~/.dotfiles`. You may need to turn on Full Disk Encryption (in Settings) for Terminal to continue its process.
 3. Reboot the machine
 4. Open System Preferences
    - Disable iCloud password and keychain
