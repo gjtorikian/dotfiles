@@ -28,10 +28,13 @@ There are a few special files in the hierarchy.
 2. `script/bootstrap`
    This will symlink the appropriate files in `.dotfiles` to your home directory. Everything is configured and tweaked within `~/.dotfiles`. You may need to turn off Full Disk Encryption (in Settings) for Terminal to continue its process.
 3. Reboot the machine
-4. Open System Preferences
+4. Open Safari
+   - Disable Autofill
+5. Open System Preferences
    - Disable iCloud password and keychain
+   - Enable [Documents and Desktop sync](https://support.apple.com/en-us/109344)
+   - Disable [Safari autofill](https://support.1password.com/disable-browser-password-manager/#if-youre-using-safari-mac)
    - Disable Use TouchID to unlock Mac
-   - Enable Apple Watch unlock
    - Add Internet Accounts
    - Under Notifications:
      - Show Previews: Never
@@ -39,28 +42,25 @@ There are a few special files in the hierarchy.
      - Toggle off Play sound for notification.
    - Under Display:
      Enable Night Shift
-5. Change the Finder Sidebar preferences
-   1. Add Home
-6. Sign in to Dropbox
-   1. Be prepared for lots of questions
-7. Open 1password
-   1. Open Safari to link extension
-   2. Open Preferencess
-      1. Under General change Autofill keyboard shortcut to cmd + l-shift + backslash
-   3. Enable SSH Agent Under Developer
-8. Open VS Code
-   1. Enable Settings sync
-9. iTerm2 preferences
-   1. Import iterm.json theme
-10. Open Alt-Tab
-11. Change shortcut to Cmd + Tab
+6. Change the Finder Sidebar preferences
+   - Add Home
+7. Sign in to Dropbox
+   - Be prepared for lots of questions
+8. Open 1password
+   - Open Safari to link extension
+   - Open Preferences
+     - Under General change Autofill keyboard shortcut to cmd + l-shift + backslash
+   - Enable SSH Agent Under Developer
+9. Open VS Code
+   - Enable Settings sync
+10. iTerm2 preferences
+    - Import iterm.json theme
+11. Open Alt-Tab
+    - Change shortcut to Cmd + Tab
 12. Open Scrivener
-    1. Choose ~/Documents as Backup Folder
-13. Open Safari
-    1. Disable Autofill
-14. `cd ~/.dotfiles; macos/restore_backups.sh`
-15. Set up ngrok auth: https://dashboard.ngrok.com/get-started/your-authtoken
-16. Run `gh extension install actions/gh-actions-cache`
+    - Choose ~/Documents as Backup Folder
+13. `cd ~/.dotfiles; macos/restore_backups.sh`
+14. Set up ngrok auth: https://dashboard.ngrok.com/get-started/your-authtoken
 
 ## Thanks
 

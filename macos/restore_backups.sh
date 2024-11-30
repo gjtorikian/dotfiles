@@ -4,16 +4,16 @@ function perform_copy {
     cmd="${1}"
     filename="${2}"
 
-    src="/Volumes/LaCie/Backups.backupdb/Gideon/Latest/Data/Users/gjtorikian/$filename"
+    src="/Volumes/LaCie/Backups.backupdb/Gideon/Latest/Macintosh HD - Data/Users/gjtorikian/$filename"
     dest="$HOME/$filename"
-    now=`date +"%T"`
+    now=$(date +"%T")
 
     echo ''
     echo "($now) Copying $src to $dest ... "
 
     $cmd "$src" "$dest"
 
-    now=`date +"%T"`
+    now=$(date +"%T")
     echo "($now) Copied $dest"
 }
 
@@ -24,10 +24,8 @@ declare -a folders=(
     .rbenv
     .rustup
     .ssh
-    Documents
     Downloads
     go
-    Pictures
 );
 
 declare -a files=(
@@ -35,8 +33,8 @@ declare -a files=(
 );
 
 if ! plutil -lint /Library/Preferences/com.apple.TimeMachine.plist >/dev/null ; then
-  cecho "This script requires your terminal app to have Full Disk Access." $red
-  echo "Add this terminal to the Full Disk Access list in System Preferences > Security & Privacy, quit the app, and re-run this script."
+  echo "This script requires your terminal app to have Full Disk Access." $red
+  echo "Add this terminal to the Full Disk Access list in System Settingws > Privacy & Security, quit the app, and re-run this script."
   echo ""
   # shellcheck disable=SC2162
   read -p "If you are certain this terminal has Full Disk Access, press [Enter] to continue."
