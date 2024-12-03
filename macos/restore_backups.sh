@@ -3,9 +3,10 @@
 function perform_copy {
     cmd="${1}"
     filename="${2}"
+    dest="${3}"
 
-    src="/Volumes/LaCie/Backups.backupdb/Gideon/Latest/Macintosh HD - Data/Users/gjtorikian/$filename"
-    dest="$HOME/$filename"
+    src="/Volumes/LaCie/Backups.backupdb/Nezu/Latest/Macintosh HD - Data/Users/gjtorikian/$filename"
+
     now=$(date +"%T")
 
     echo ''
@@ -18,11 +19,6 @@ function perform_copy {
 }
 
 declare -a folders=(
-    .bundle
-    .cargo
-    .gem
-    .rbenv
-    .rustup
     .ssh
     Downloads
     go
@@ -41,9 +37,9 @@ if ! plutil -lint /Library/Preferences/com.apple.TimeMachine.plist >/dev/null ; 
 fi
 
 for folder in "${folders[@]}"; do
-    perform_copy "gcp -dr" "$folder"
+    perform_copy "gcp -dr" "$folder" "$HOME"
 done
 
 for file in "${files[@]}"; do
-    perform_copy "cp" "$file"
+    perform_copy "cp" "$file" "$HOME/$filename"
 done
