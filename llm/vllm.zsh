@@ -1,0 +1,1 @@
+alias vllm="~/Developer/vllm/.venv/bin/vllm"
