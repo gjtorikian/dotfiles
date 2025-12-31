@@ -2,3 +2,4 @@ alias subl="/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl"
 alias code="/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code"
 alias as="atuin search $@"
 eval $(thefuck --alias)
+alias l0="LEFTHOOK=0"
