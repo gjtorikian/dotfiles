@@ -23,10 +23,10 @@ sudo -v
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # Set computer name (as done via System Preferences → Sharing)
-sudo scutil --set ComputerName "Gideon"
-sudo scutil --set HostName "Gideon"
-sudo scutil --set LocalHostName "Gideon"
-sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "Gideon"
+sudo scutil --set ComputerName "Nezu"
+sudo scutil --set HostName "Nezu"
+sudo scutil --set LocalHostName "Nezu"
+sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "Nezu"
 
 defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 2
 
