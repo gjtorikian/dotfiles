@@ -30,11 +30,10 @@ There are a few special files in the hierarchy.
    This will symlink the appropriate files in `.dotfiles` to your home directory. Everything is configured and tweaked within `~/.dotfiles`. You may need to turn off Full Disk Encryption (in Settings) for Terminal to continue its process.
 4. Reboot the machine
 5. Open Safari
-   - Disable Autofill
+   - Disable [autofill](https://support.1password.com/disable-browser-password-manager/#if-youre-using-safari-mac)
 6. Open System Preferences
    - Disable iCloud password and keychain
    - Enable [Documents and Desktop sync](https://support.apple.com/en-us/109344)
-   - Disable [Safari autofill](https://support.1password.com/disable-browser-password-manager/#if-youre-using-safari-mac)
    - Disable Use TouchID to unlock Mac
    - Add Internet Accounts
    - Under Notifications:
@@ -55,8 +54,7 @@ There are a few special files in the hierarchy.
      - Under General change Autofill keyboard shortcut to cmd + l-shift + backslash
    - Enable SSH Agent Under Developer
 10. Open VS Code
-
-- Enable Settings sync
+   - Enable Settings sync
 
 11. iTerm2 preferences
     - Import iterm.json theme
