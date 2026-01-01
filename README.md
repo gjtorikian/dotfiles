@@ -24,8 +24,8 @@ There are a few special files in the hierarchy.
 
 ## Setup
 
-1. Clone the repository
-2. Come up with a new machine name. Set it in `set-defaults.sh`.
+1. Clone the repository: `git clone https://github.com/gjtorikian/dotfiles.git ~/.dotfiles`
+2. Come up with a new machine name. Set it in `macos/set-defaults.sh`.
 3. `script/bootstrap`
    This will symlink the appropriate files in `.dotfiles` to your home directory. Everything is configured and tweaked within `~/.dotfiles`. You may need to turn off Full Disk Encryption (in Settings) for Terminal to continue its process.
 4. Reboot the machine
