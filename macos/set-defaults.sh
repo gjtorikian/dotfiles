@@ -137,29 +137,29 @@ defaults write com.apple.dock wvous-tl-corner -int 13
 defaults write com.apple.dock wvous-tl-modifier -int 0
 
 # Show Safari's bookmark bar.
-defaults write com.apple.Safari ShowFavoritesBar -bool true
+sudo defaults write com.apple.Safari ShowFavoritesBar -bool true
 
 ###############################################################################
 # Safari                                                                      #
 ###############################################################################
 
 # Set up Safari for development.
-defaults write com.apple.Safari IncludeInternalDebugMenu -bool false
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
-defaults write com.apple.Safari WebKitPreferences.developerExtrasEnabled 1
+sudo defaults write com.apple.Safari IncludeInternalDebugMenu -bool false
+sudo defaults write com.apple.Safari IncludeDevelopMenu -bool true
+sudo defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
+sudo defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
+sudo defaults write com.apple.Safari WebKitPreferences.developerExtrasEnabled 1
 defaults write com.apple.Safari.SandboxBroker ShowDevelopMenu 1
-defaults write com.apple.Safari WebKitPreferences.privateClickMeasurementEnabled 0
+sudo defaults write com.apple.Safari WebKitPreferences.privateClickMeasurementEnabled 0
 
 # Show the full URL in the address bar (note: this still hides the scheme)
-defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
+sudo defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
 
 # Safari: Warn about fraudulent websites
-defaults write com.apple.Safari WarnAboutFraudulentWebsites -bool true
+sudo defaults write com.apple.Safari WarnAboutFraudulentWebsites -bool true
 
 # Safari: Enable Do Not Track
-defaults write com.apple.Safari SendDoNotTrackHTTPHeader -bool true
+sudo defaults write com.apple.Safari SendDoNotTrackHTTPHeader -bool true
 
 ###############################################################################
 # Shell & Terminal
