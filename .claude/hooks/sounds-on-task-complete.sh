@@ -9,8 +9,8 @@ if [ -f "$START_TIME_FILE" ]; then
   CURRENT_TIME=$(date +%s)
   ELAPSED=$((CURRENT_TIME - START_TIME))
 
-  if [ "$ELAPSED" -lt 60 ]; then
-    # Less than 1 minute
+  if [ "$ELAPSED" -lt 120 ]; then
+    # Less than 2 minutes
     afplay "$SOUND_DIR/super-mario-world-coin.mp3" &
   elif [ "$ELAPSED" -lt 600 ]; then
     # Less than 10 minutes
