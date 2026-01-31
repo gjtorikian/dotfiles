@@ -115,31 +115,53 @@ link_file () {
   fi
 }
 
+# Directories that need to be nested (symlinked into subdirectories of $HOME)
+NESTED_DIRS=(
+  ".ssh"
+  ".claude"
+  ".config/ghostty"
+)
+
+# Check if a source path should be nested, and if so, link it to the appropriate directory
+# Returns 0 (true) if handled as nested, 1 (false) if not
+link_nested () {
+  local src=$1
+  local filename=$2
+
+  for nested_dir in "${NESTED_DIRS[@]}"; do
+    if [[ $src == *"$nested_dir"* ]]; then
+      filename="${filename:1}"  # strip leading dot
+      mkdir -p "$HOME/$nested_dir"
+      link_file "$src" "$HOME/$nested_dir/$filename"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 install_dotfiles () {
   info 'installing dotfiles'
 
   local overwrite_all=false backup_all=false skip_all=false
 
-  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
+  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 3 -name '*.symlink' -not -path '*.git*')
   do
     filename=".$(basename "${src%.*}")"
     dst="$HOME/$filename"
 
-    # .ssh dir needs to be nested
-    if [[ $src == *".ssh"* ]]; then
-      filename="${filename:1}"
-      mkdir -p "$HOME/.ssh"
-      link_file "$src" "$HOME/.ssh/$filename"
-      continue
+    # Try to link as nested; if not nested, link to $HOME directly
+    if ! link_nested "$src" "$filename"; then
+      link_file "$src" "$dst"
     fi
-    link_file "$src" "$dst"
   done
 }
 
 setup_gitconfig
-install_dotfiles
 
-# If we're on a Mac, let's install and setup homebrew.
+# Install and setup homebrew first.
+# This ensures apps like ghostty and claude-code are installed
+# before we create symlinks to their config directories.
 if [ "$(uname -s)" == "Darwin" ]
 then
   info "installing dependencies"
@@ -150,6 +172,8 @@ then
     fail "error installing dependencies"
   fi
 fi
+
+install_dotfiles
 
 background="$HOME/.dotfiles/theme/background.jpg"
 osascript -e "tell application \"Finder\" to set desktop picture to POSIX file \"$background\""
