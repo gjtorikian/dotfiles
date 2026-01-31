@@ -120,6 +120,7 @@ NESTED_DIRS=(
   ".ssh"
   ".claude"
   ".config/ghostty"
+  ".config/zed"
 )
 
 # Check if a source path should be nested, and if so, link it to the appropriate directory
