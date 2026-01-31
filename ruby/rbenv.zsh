@@ -1,5 +1,6 @@
 # Lazy-load rbenv for faster shell startup
-if (( $+commands[rbenv] )); then
+# Use direct path check - $+commands is slow on long PATHs
+if [[ -x /opt/homebrew/bin/rbenv ]]; then
   export PATH="$HOME/.rbenv/shims:$PATH"
 
   _rbenv_init() {
