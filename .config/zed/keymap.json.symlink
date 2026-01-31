@@ -1,0 +1,17 @@
+[
+  {
+    // cmd+\ to toggle sidebar (left dock) — matches VS Code binding
+    "bindings": { "cmd-\\": "workspace::ToggleLeftDock" },
+    "context": "Workspace"
+  },
+  {
+    // 'a' to create new file when project panel is focused
+    "bindings": { "a": "project_panel::NewFile" },
+    "context": "ProjectPanel && !editing"
+  },
+  {
+    // backspace to delete file when project panel is focused
+    "bindings": { "backspace": "project_panel::Delete" },
+    "context": "ProjectPanel && !editing"
+  }
+]

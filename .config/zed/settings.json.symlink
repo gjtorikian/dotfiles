@@ -1,0 +1,112 @@
+{
+  // Base keymap — switched from Atom to VSCode
+  "base_keymap": "VSCode",
+
+  // Theme — "GitHub Dark Dimmed" is available as a Zed extension
+  "theme": {
+    "mode": "dark",
+    "dark": "GitHub Dark Dimmed",
+    "light": "GitHub Dark Dimmed"
+  },
+
+  // Font — matches your VS Code "Monaspace Neon" + ligatures
+  "buffer_font_family": "Monaspace Neon",
+  "buffer_font_size": 14,
+  "buffer_font_features": { "calt": true, "liga": true },
+  "ui_font_size": 16,
+
+  // Editor behavior
+  "show_whitespaces": "all",
+  "minimap": { "show": "never" },
+  "rulers": [65, 120],
+  "show_inline_completions": true,
+  "tab_size": 2,
+  "format_on_save": "on",
+  "ensure_final_newline_on_save": true,
+  "remove_trailing_whitespace_on_save": true,
+
+  // Auto-save on focus change (matches "files.autoSave": "onFocusChange")
+  "autosave": { "after_delay": { "milliseconds": 0 } },
+
+  // Terminal settings
+  "terminal": {
+    "shell": { "program": "zsh", "args": ["-l"] },
+    "font_family": "monospace",
+    "font_size": 16,
+    "max_scroll_history_lines": 10000,
+    "blinking": "on"
+  },
+
+  // Inline assistant / Copilot equivalent
+  "features": {
+    "inline_completion_provider": "copilot"
+  },
+
+  // File scan exclusions (Zed's equivalent of explorer settings)
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/node_modules",
+    "**/target"
+  ],
+
+  // Git settings
+  "git": {
+    "inline_blame": { "enabled": true }
+  },
+
+  // File type associations
+  "file_types": {
+    "Ruby": ["thor"],
+    "ERB": ["html.erb"],
+    "Markdown": ["mdoc"]
+  },
+
+  // Language-specific overrides
+  "languages": {
+    "Ruby": {
+      "tab_size": 2,
+      "rulers": [120],
+      "format_on_save": "on",
+      "language_servers": ["ruby-lsp"]
+    },
+    "Python": {
+      "tab_size": 4,
+      "format_on_save": "on",
+      "language_servers": ["ruff", "pyright"]
+    },
+    "JavaScript": {
+      "format_on_save": "on",
+      "formatter": { "language_server": { "name": "prettier" } }
+    },
+    "TypeScript": {
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "format_on_save": "on",
+      "formatter": { "language_server": { "name": "prettier" } }
+    },
+    "HTML": {
+      "format_on_save": "on",
+      "formatter": { "language_server": { "name": "prettier" } }
+    },
+    "Markdown": {
+      "format_on_save": "on",
+      "formatter": { "language_server": { "name": "prettier" } }
+    },
+    "JSON": {
+      "format_on_save": "on"
+    },
+    "JSONC": {
+      "format_on_save": "on"
+    },
+    "YAML": {
+      "format_on_save": "off"
+    },
+    "Docker Compose": {
+      "tab_size": 2
+    },
+    "Astro": {
+      "format_on_save": "on"
+    }
+  }
+}
