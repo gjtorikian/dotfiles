@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#
+# Re-apply symlinks without running the full bootstrap.
+
+cd "$(dirname "$0")/.."
+DOTFILES_ROOT=$(pwd -P)
+
+set -e
+
+echo ''
+
+info () {
+  printf "\r  [ \033[00;34m..\033[0m ] $1\n"
+}
+
+success () {
+  printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
+}
+
+fail () {
+  printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
+  echo ''
+  exit
+}
+
+link_file () {
+  local src=$1 dst=$2
+
+  # Skip if symlink already points to the correct target
+  if [ -L "$dst" ] && [ "$(readlink "$dst")" == "$src" ]; then
+    return
+  fi
+
+  if [ -f "$dst" -o -d "$dst" -o -L "$dst" ]; then
+    rm -rf "$dst"
+    success "removed $dst"
+  fi
+
+  ln -s "$src" "$dst"
+  success "linked $src to $dst"
+}
+
+# Directories that need to be nested (symlinked into subdirectories of $HOME)
+NESTED_DIRS=(
+  ".ssh"
+  ".claude"
+  ".config/ghostty"
+  ".config/zed"
+)
+
+# Check if a source path should be nested, and if so, link it to the appropriate directory
+# Returns 0 (true) if handled as nested, 1 (false) if not
+link_nested () {
+  local src=$1
+  local filename=$2
+
+  for nested_dir in "${NESTED_DIRS[@]}"; do
+    if [[ $src == *"$nested_dir"* ]]; then
+      filename="${filename:1}"  # strip leading dot
+      mkdir -p "$HOME/$nested_dir"
+      link_file "$src" "$HOME/$nested_dir/$filename"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+install_dotfiles () {
+  info 'installing dotfiles'
+
+  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 3 -name '*.symlink' -not -path '*.git*')
+  do
+    filename=".$(basename "${src%.*}")"
+    dst="$HOME/$filename"
+
+    # Try to link as nested; if not nested, link to $HOME directly
+    if ! link_nested "$src" "$filename"; then
+      link_file "$src" "$dst"
+    fi
+  done
+}
+
+install_dotfiles
+
+echo ''
+echo '  Symlinks applied!'
