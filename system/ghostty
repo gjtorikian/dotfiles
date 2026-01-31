@@ -1,0 +1,52 @@
+# Theme settings
+palette = 0=#494f57
+palette = 1=#ee8277
+palette = 2=#64b75d
+palette = 3=#c99b3e
+palette = 4=#6ba4f8
+palette = 5=#b58ef8
+palette = 6=#66c2cd
+palette = 7=#b3bac3
+palette = 8=#6f7680
+palette = 9=#f2a59b
+palette = 10=#79d071
+palette = 11=#dbb556
+palette = 12=#89befa
+palette = 13=#cbaaf9
+palette = 14=#7ad1db
+palette = 15=#f1f6fb
+background = #020409
+foreground = #8d949d
+cursor-color = #8d949d
+selection-background = #414347
+selection-foreground = #8c949e
+
+bold-is-bright = true
+
+# window settings
+macos-titlebar-style = tabs
+window-decoration = true
+window-theme = auto
+window-padding-color = background
+window-padding-x = 0
+window-padding-y = 0
+window-padding-balance = false
+window-colorspace = "display-p3"
+adjust-cell-height = 10%
+cursor-invert-fg-bg = true
+
+shell-integration-features = no-cursor,sudo
+confirm-close-surface = false
+
+# Font settings
+font-family = "Monaspace Neon Regular"
+font-family-italic = "Monaspace Radon Var Regular Italic"
+font-family-bold-italic = "Monaspace Radon Var Bold Italic"
+font-size = 16
+font-feature = +liga
+cursor-style = block
+adjust-underline-position = 4
+
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
