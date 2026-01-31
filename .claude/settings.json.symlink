@@ -1,0 +1,28 @@
+{
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true,
+    "essentials@gjtorikian-plugins": true
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/gjtorikian/.dotfiles/.claude/hooks/track-start-time.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/gjtorikian/.dotfiles/.claude/hooks/sounds-on-task-complete.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
