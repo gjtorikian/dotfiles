@@ -151,7 +151,7 @@ then
   fi
 fi
 
-background="$HOME/.dotfiles/background/current.jpg"
+background="$HOME/.dotfiles/theme/background.jpg"
 osascript -e "tell application \"Finder\" to set desktop picture to POSIX file \"$background\""
 
 echo ''

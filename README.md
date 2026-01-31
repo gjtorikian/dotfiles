@@ -53,17 +53,15 @@ There are a few special files in the hierarchy.
    - Open Preferences
      - Under General change Autofill keyboard shortcut to cmd + l-shift + backslash
    - Enable SSH Agent Under Developer
-10. Open VS Code
-   - Enable Settings sync
 
-11. iTerm2 preferences
-    - Import iterm.json theme
-12. Open Alt-Tab
+10. Open VS Code and enable Settings sync
+
+11. Open Alt-Tab
     - Change shortcut to Cmd + Tab
-13. Open Scrivener
+12. Open Scrivener
     - Choose ~/Documents as Backup Folder
-14. `cd ~/.dotfiles; macos/restore_backups.sh`
-15. Set up ngrok auth: https://dashboard.ngrok.com/get-started/your-authtoken
+13. `cd ~/.dotfiles; macos/restore_backups.sh`
+14. Set up ngrok auth: https://dashboard.ngrok.com/get-started/your-authtoken
 
 ## Thanks
 
