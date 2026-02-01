@@ -4,6 +4,17 @@
     "essentials@gjtorikian-plugins": true
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/gjtorikian/.dotfiles/.claude/hooks/fix-nodenv.sh"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
