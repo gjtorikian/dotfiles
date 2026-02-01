@@ -10,10 +10,13 @@ if [ -f "$START_TIME_FILE" ]; then
   ELAPSED=$((CURRENT_TIME - START_TIME))
 
   if [ "$ELAPSED" -lt 120 ]; then
-    # Less than 2 minutes
+    # Less than 2 minutes - no sound
+    :
+  elif [ "$ELAPSED" -lt 300 ]; then
+    # 2-5 minutes
     afplay "$SOUND_DIR/super-mario-world-coin.mp3" &
   elif [ "$ELAPSED" -lt 600 ]; then
-    # Less than 10 minutes
+    # 5-10 minutes
     afplay "$SOUND_DIR/super-mario-world-multiple-coins.mp3" &
   else
     # 10 minutes or longer
