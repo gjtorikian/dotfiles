@@ -40,27 +40,10 @@ done
 
 export ZSH=$HOME/.dotfiles
 
-# Set macOS defaults
-$ZSH/macos/set-defaults.sh
+cd "$dotfilesDirectory"
 
-# Install homebrew
-$ZSH/homebrew/install.sh 2>&1
-
-# Ask for sudo password upfront and keep it alive during long installs
-sudo -v
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-
-# Upgrade homebrew
-echo "› brew update"
-brew update
-
-# Add brews
-echo "› brew bundle"
-brew bundle --file=$ZSH/Brewfile
-
-# Install software
-echo "› $ZSH/script/install"
-$ZSH/script/install
-
-# Update dock
-$ZSH/macos/dock.sh
+# Stash any local changes, pull latest, then restore
+echo "› Updating dotfiles"
+git stash --quiet
+git pull --rebase --quiet
+git stash pop --quiet 2>/dev/null || true
