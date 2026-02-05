@@ -1,8 +1,4 @@
 {
-  "enabledPlugins": {
-    "ralph-loop@claude-plugins-official": true,
-    "essentials@gjtorikian-plugins": true
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -35,5 +31,12 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true,
+    "essentials@gjtorikian-plugins": true,
+    "ideation@nicknisi": true,
+    "spec-driven@nicknisi": true,
+    "consultant@nicknisi": true
   }
 }
