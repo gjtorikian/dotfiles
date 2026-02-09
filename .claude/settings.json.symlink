@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/gjtorikian/.dotfiles/.claude/hooks/fix-nodenv.sh"
+            "command": "/Users/gjtorikian/.dotfiles/.claude/hooks/fix-env-lazy-load.sh"
           }
         ]
       }
