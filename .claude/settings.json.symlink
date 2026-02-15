@@ -38,5 +38,6 @@
     "ideation@nicknisi": true,
     "spec-driven@nicknisi": true,
     "consultant@nicknisi": true
-  }
+  },
+  "skipDangerousModePermissionPrompt": true
 }
