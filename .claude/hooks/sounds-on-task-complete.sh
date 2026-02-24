@@ -20,7 +20,7 @@ if [ -f "$START_TIME_FILE" ]; then
     afplay "$SOUND_DIR/super-mario-world-multiple-coins.mp3" &
   else
     # 10 minutes or longer
-    afplay "$SOUND_DIR/oot-139-item-catch.mp3" &
+    afplay --volume 0.8 "$SOUND_DIR/oot-139-item-catch.mp3" &
   fi
 fi
 
