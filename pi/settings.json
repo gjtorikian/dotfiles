@@ -1,0 +1,21 @@
+{
+  "lastChangelogVersion": "0.57.1",
+  "defaultProvider": "baseten",
+  "defaultModel": "claude-opus-4-6",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "claude-opus-4-6",
+    "claude-sonnet-4-6",
+    "gpt-5.3-codex",
+    "gemini-3.1-pro-preview",
+    "kimi-k2.5"
+  ],
+  "skills": [
+    "skills/commit",
+    "skills/git-workflow",
+    "skills/github",
+    "skills/native-web-search"
+  ],
+  "hideThinkingBlock": false,
+  "quietStartup": true
+}

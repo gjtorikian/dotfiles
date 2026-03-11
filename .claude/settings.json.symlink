@@ -37,7 +37,10 @@
     "essentials@gjtorikian-plugins": true,
     "ideation@nicknisi": true,
     "spec-driven@nicknisi": true,
-    "consultant@nicknisi": true
+    "consultant@nicknisi": true,
+    "skill-creator@claude-plugins-official": true
   },
-  "skipDangerousModePermissionPrompt": true
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "model": "opus[1m]"
 }
