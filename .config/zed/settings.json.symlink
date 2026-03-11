@@ -1,5 +1,8 @@
 {
   // Base keymap — switched from Atom to VSCode
+  "edit_predictions": {
+    "provider": "copilot"
+  },
   "base_keymap": "VSCode",
 
   // Theme — "GitHub Dark Dimmed" is available as a Zed extension
@@ -50,10 +53,6 @@
   },
 
   // Inline assistant / Copilot equivalent
-  "features": {
-    "edit_prediction_provider": "copilot",
-  },
-
   // File scan exclusions (Zed's equivalent of explorer settings)
   "file_scan_exclusions": ["**/.git", "**/node_modules", "**/target"],
 
