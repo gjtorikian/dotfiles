@@ -1,12 +1,12 @@
 {
-  "lastChangelogVersion": "0.57.1",
+  "lastChangelogVersion": "0.60.0",
   "defaultProvider": "baseten",
-  "defaultModel": "claude-opus-4-6",
+  "defaultModel": "moonshotai/Kimi-K2.5",
   "defaultThinkingLevel": "high",
   "enabledModels": [
     "claude-opus-4-6",
     "claude-sonnet-4-6",
-    "gpt-5.3-codex",
+    "gpt-5.4",
     "gemini-3.1-pro-preview",
     "kimi-k2.5"
   ],
@@ -16,6 +16,6 @@
     "skills/github",
     "skills/native-web-search"
   ],
-  "hideThinkingBlock": false,
+  "hideThinkingBlock": true,
   "quietStartup": true
 }
