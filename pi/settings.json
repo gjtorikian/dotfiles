@@ -16,6 +16,9 @@
     "skills/github",
     "skills/native-web-search"
   ],
+  "extensions": [
+    "extensions/custom-footer.ts"
+  ],
   "hideThinkingBlock": true,
   "quietStartup": true
 }
