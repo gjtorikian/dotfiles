@@ -3,6 +3,7 @@ system/ssh.config
 token.zsh
 vendor/cache/
 work/
+!work/.gitkeep
 pi/sessions/
 pi/auth.json
 pi/.update-check
