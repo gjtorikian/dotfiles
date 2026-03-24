@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.60.0",
+  "lastChangelogVersion": "0.62.0",
   "defaultProvider": "baseten",
   "defaultModel": "moonshotai/Kimi-K2.5",
   "defaultThinkingLevel": "high",
@@ -20,5 +20,8 @@
     "extensions/custom-footer.ts"
   ],
   "hideThinkingBlock": true,
-  "quietStartup": true
+  "quietStartup": true,
+  "packages": [
+    "git:github.com/gjtorikian/pi-extensions"
+  ]
 }
