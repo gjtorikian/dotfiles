@@ -1,4 +1,10 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "defaultMode": "auto"
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -38,13 +44,18 @@
   },
   "enabledPlugins": {
     "ralph-loop@claude-plugins-official": true,
-    "essentials@gjtorikian-plugins": true,
     "ideation@nicknisi": true,
     "spec-driven@nicknisi": true,
     "consultant@nicknisi": true,
     "skill-creator@claude-plugins-official": true,
-    "content@nicknisi": true
+    "content@nicknisi": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "ruby-lsp@claude-plugins-official": true,
+    "agents@gjtorikian-plugins": true,
+    "github@gjtorikian-plugins": true,
+    "git@gjtorikian-plugins": true
   },
   "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true
 }
