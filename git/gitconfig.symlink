@@ -37,7 +37,7 @@
 	process = git-lfs filter-process
 	required = true
 [pull]
-	rebase = true
+	rebase = merges
 [credential "https://github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
