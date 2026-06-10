@@ -1,27 +1,58 @@
 #!/bin/bash
-# Play different sounds based on task duration
+# Play a task-complete sound based on (1) how long the task ran and
+# (2) the currently selected sound mode (/zelda, /mario, /wc3, /sound-default).
+#
+# The active mode is written to MODE_FILE by the slash commands in
+# .claude/commands/. Sounds live in SOUND_ROOT/<mode>/{short,medium,long}.mp3.
+#
+# Per-tier fallback chain (keeps things playing even when audio is missing):
+#   <mode>/<tier>.mp3  ->  any *.mp3 in <mode>/  ->
+#   default/<tier>.mp3 ->  any *.mp3 in default/  ->  silence
 
 START_TIME_FILE="/tmp/claude-task-start-time"
-SOUND_DIR="/Users/gjtorikian/.dotfiles/theme/notifications"
+MODE_FILE="/tmp/claude-sound-mode"
+SOUND_ROOT="/Users/gjtorikian/.dotfiles/theme/notifications"
 
-if [ -f "$START_TIME_FILE" ]; then
-  START_TIME=$(cat "$START_TIME_FILE")
-  CURRENT_TIME=$(date +%s)
-  ELAPSED=$((CURRENT_TIME - START_TIME))
+# ── resolve the active mode ─────────────────────────────────────────────────
+mode="default"
+[ -f "$MODE_FILE" ] && mode="$(tr -d '[:space:]' < "$MODE_FILE")"
+[ -z "$mode" ] && mode="default"
+[ -d "$SOUND_ROOT/$mode" ] || mode="default"
 
-  if [ "$ELAPSED" -lt 120 ]; then
-    # Less than 2 minutes - no sound
-    :
-  elif [ "$ELAPSED" -lt 300 ]; then
-    # 2-5 minutes
-    afplay "$SOUND_DIR/super-mario-world-coin.mp3" &
-  elif [ "$ELAPSED" -lt 600 ]; then
-    # 5-10 minutes
-    afplay "$SOUND_DIR/super-mario-world-multiple-coins.mp3" &
+# ── pick a playable file for a tier, with fallbacks ─────────────────────────
+pick() {
+  local tier="$1" dir f
+  for dir in "$SOUND_ROOT/$mode" "$SOUND_ROOT/default"; do
+    [ -d "$dir" ] || continue
+    [ -e "$dir/$tier.mp3" ] && { echo "$dir/$tier.mp3"; return; }
+    f=$(ls "$dir"/*.mp3 2>/dev/null | head -n1)
+    [ -n "$f" ] && [ -e "$f" ] && { echo "$f"; return; }
+  done
+}
+
+play() {
+  local file="$1" vol="$2"
+  [ -n "$file" ] && [ -e "$file" ] || return
+  if [ -n "$vol" ]; then
+    afplay --volume "$vol" "$file" &
   else
-    # 10 minutes or longer
-    afplay --volume 0.8 "$SOUND_DIR/oot-139-item-catch.mp3" &
+    afplay "$file" &
   fi
+}
+
+# ── play based on elapsed time ──────────────────────────────────────────────
+[ -f "$START_TIME_FILE" ] || exit 0
+START_TIME=$(cat "$START_TIME_FILE")
+ELAPSED=$(($(date +%s) - START_TIME))
+
+if [ "$ELAPSED" -lt 120 ]; then
+  : # < 2 min — stay quiet
+elif [ "$ELAPSED" -lt 300 ]; then
+  play "$(pick short)" # 2–5 min
+elif [ "$ELAPSED" -lt 600 ]; then
+  play "$(pick medium)" # 5–10 min
+else
+  play "$(pick long)" 0.8 # 10 min+
 fi
 
 exit 0

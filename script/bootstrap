@@ -176,6 +176,22 @@ fi
 
 install_dotfiles
 
+# Link the Claude slash-command directory as a whole. The *.symlink mechanism
+# above only links individual files and flattens nested dirs, so it can't
+# express ~/.claude/commands -> .dotfiles/.claude/commands.
+link_claude_commands () {
+  local src="$DOTFILES_ROOT/.claude/commands"
+  local dst="$HOME/.claude/commands"
+  [ -d "$src" ] || return 0
+  mkdir -p "$HOME/.claude"
+  if [ -L "$dst" ] || [ ! -e "$dst" ]; then
+    ln -sf "$src" "$dst"
+    success "linked $src to $dst"
+  fi
+}
+
+link_claude_commands
+
 background="$HOME/.dotfiles/theme/background.jpg"
 osascript -e "tell application \"Finder\" to set desktop picture to POSIX file \"$background\""
 
