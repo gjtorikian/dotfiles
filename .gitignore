@@ -7,3 +7,4 @@ work/
 pi/sessions/
 pi/auth.json
 pi/.update-check
+zsh/ssh-aliases.zsh
