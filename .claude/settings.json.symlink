@@ -5,7 +5,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -44,19 +44,32 @@
     "command": "/Users/gjtorikian/.dotfiles/bin/claude-status"
   },
   "enabledPlugins": {
+    "dx@workos-internal": true,
     "ralph-loop@claude-plugins-official": true,
     "ideation@nicknisi": true,
-    "spec-driven@nicknisi": true,
     "consultant@nicknisi": true,
     "skill-creator@claude-plugins-official": true,
-    "content@nicknisi": true,
     "gopls-lsp@claude-plugins-official": true,
     "ruby-lsp@claude-plugins-official": true,
     "agents@gjtorikian-plugins": true,
     "github@gjtorikian-plugins": true,
-    "git@gjtorikian-plugins": true
+    "git@gjtorikian-plugins": true,
+    "frontend-design@claude-plugins-official": true,
+    "sessions@sessions": true,
+    "swift-lsp@claude-plugins-official": true
   },
-  "effortLevel": "high",
+  "extraKnownMarketplaces": {
+    "sessions": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/gjtorikian/.local/share/sessions"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "autoCompactEnabled": true,
   "skipAutoPermissionPrompt": true
 }
