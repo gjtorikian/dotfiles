@@ -4,5 +4,51 @@
 # command line interface to it that we can use to just install everything, so
 # yeah, let's do that.
 
-echo "› sudo softwareupdate -i -a"
-sudo softwareupdate -i -a
+# Everything lives in main() so `sh` parses the whole file before running any of
+# it — editing this script while it's running can't corrupt the parse.
+main() {
+    # We need the password twice over: once for sudo, and once for
+    # softwareupdate's own owner-authentication prompt (Apple Silicon needs a
+    # volume owner to authorize OS updates; sudo's cache can't cover that).
+    # It stays in this variable and is only ever piped to a process's stdin —
+    # never written to disk, never exported, never passed as an argument.
+    read -rsp "Enter your password: " PASSWD
+    echo
+
+    # Validate, and prime sudo's credential cache in the same step
+    if ! printf '%s\n' "$PASSWD" | sudo -S -v 2>/dev/null; then
+        echo "❌ Incorrect password"
+        exit 1
+    fi
+
+    # Keep the cache warm for the whole run (-n so it never re-prompts). This
+    # outlives PASSWD below — once the cache is primed, -v needs no password.
+    (while kill -0 "$$" 2>/dev/null; do sudo -n -v 2>/dev/null; sleep 30; done) &
+    KEEPALIVE=$!
+    trap 'kill "$KEEPALIVE" 2>/dev/null' EXIT
+
+    echo "🚀 Starting system-wide updates..."
+
+    # macOS updates run first, while we still hold the password, so it can be
+    # dropped before the long brew phase rather than sitting in memory for it.
+    # --stdinpass consumes stdin, so no 'yes |' here; --agree-to-license is the
+    # non-interactive equivalent. No -R: restarts stay a deliberate choice.
+    echo "› macOS updates"
+    printf '%s\n' "$PASSWD" |
+        sudo -n softwareupdate -ia --user "$(id -un)" --stdinpass --agree-to-license
+
+    # Done with the secret. This frees the variable but does not scrub the heap —
+    # it shortens the window, it isn't a guarantee.
+    unset PASSWD
+
+    # Pipe 'yes' into brew to auto-confirm any formula/cask prompts
+    echo "› Homebrew"
+    yes | brew update
+    yes | brew upgrade --formula --quiet
+    yes | brew upgrade --cask --greedy --quiet
+    yes | brew autoremove --quiet && brew cleanup -s --quiet
+
+    echo "✅ All updates complete!"
+}
+
+main "$@"
