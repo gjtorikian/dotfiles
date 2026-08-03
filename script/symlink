@@ -7,6 +7,8 @@ DOTFILES_ROOT=$(pwd -P)
 
 set -e
 
+PI_HOSTNAME="${PI_HOST:-$(hostname -s)}"
+
 echo ''
 
 info () {
@@ -66,11 +68,28 @@ link_nested () {
   return 1
 }
 
+# Resolve host-specific override for a source file.
+# Looks for hosts/<hostname>/<basename> next to the source file's parent dir.
+# e.g. .claude/settings.json.symlink → .claude/hosts/Nezu/settings.json.symlink
+resolve_host_override () {
+  local src=$1
+  local dir=$(dirname "$src")
+  local name=$(basename "$src")
+  local host_src="$dir/hosts/$PI_HOSTNAME/$name"
+  if [ -f "$host_src" ]; then
+    info "host override ($PI_HOSTNAME) → ${host_src#$DOTFILES_ROOT/}" >&2
+    echo "$host_src"
+  else
+    echo "$src"
+  fi
+}
+
 install_dotfiles () {
   info 'installing dotfiles'
 
-  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 3 -name '*.symlink' -not -path '*.git*')
+  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 3 -name '*.symlink' -not -path '*.git*' -not -path '*/hosts/*')
   do
+    src=$(resolve_host_override "$src")
     filename=".$(basename "${src%.*}")"
     dst="$HOME/$filename"
 
@@ -82,6 +101,21 @@ install_dotfiles () {
 }
 
 install_dotfiles
+
+# Pi agent config (with per-host overrides)
+info 'linking pi agent config'
+mkdir -p "$HOME/.pi/agent"
+for src in "$DOTFILES_ROOT"/pi/*.json; do
+  [ -f "$src" ] || continue
+  name=$(basename "$src")
+  host_src="$DOTFILES_ROOT/pi/hosts/$PI_HOSTNAME/$name"
+  if [ -f "$host_src" ]; then
+    info "pi: host override ($PI_HOSTNAME) → $name"
+    link_file "$host_src" "$HOME/.pi/agent/$name"
+  else
+    link_file "$src" "$HOME/.pi/agent/$name"
+  fi
+done
 
 echo ''
 echo '  Symlinks applied!'

@@ -47,7 +47,6 @@
     "command": "/Users/gjtorikian/.dotfiles/bin/claude-status"
   },
   "enabledPlugins": {
-    "ralph-loop@claude-plugins-official": true,
     "ideation@nicknisi": true,
     "skill-creator@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,

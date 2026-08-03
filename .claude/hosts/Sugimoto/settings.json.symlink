@@ -47,7 +47,7 @@
     "command": "/Users/gjtorikian/.dotfiles/bin/claude-status"
   },
   "enabledPlugins": {
-    "ralph-loop@claude-plugins-official": true,
+    "dx@workos-internal": true,
     "ideation@nicknisi": true,
     "skill-creator@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
@@ -61,6 +61,12 @@
     "i-have-adhd@i-have-adhd": true
   },
   "extraKnownMarketplaces": {
+    "workos-internal": {
+      "source": {
+        "source": "github",
+        "repo": "workos/agent-plugins-internal"
+      }
+    },
     "sessions": {
       "source": {
         "source": "directory",
@@ -72,6 +78,13 @@
         "source": "github",
         "repo": "ayghri/i-have-adhd"
       }
+    },
+    "gjtorikian-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "gjtorikian/agent-plugins"
+      },
+      "autoUpdate": true
     }
   },
   "effortLevel": "xhigh",
