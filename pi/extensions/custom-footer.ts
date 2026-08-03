@@ -44,10 +44,10 @@ interface UsageRollups {
 
 type RemoteUsage =
 	| {
-			kind: "windows";
-			label: string;
-			windows: UsageWindow[];
-	  }
+		kind: "windows";
+		label: string;
+		windows: UsageWindow[];
+	}
 	| null;
 
 interface CachedRemoteUsage {
@@ -194,6 +194,11 @@ function mergeTotals(a: UsageTotals, b: UsageTotals): UsageTotals {
 	addTotals(merged, a);
 	addTotals(merged, b);
 	return merged;
+}
+
+function shortenModelId(modelId: string): string {
+	const slash = modelId.lastIndexOf("/");
+	return slash >= 0 ? modelId.slice(slash + 1) : modelId;
 }
 
 function getModelIcon(modelId: string): string {
@@ -458,6 +463,10 @@ export default function (pi: ExtensionAPI) {
 			});
 	}
 
+	pi.on("thinking_level_select", async () => {
+		currentTuiInstance?.requestRender();
+	});
+
 	pi.on("model_select", async (event) => {
 		activeModelSelection = {
 			provider: event.model.provider,
@@ -513,7 +522,7 @@ export default function (pi: ExtensionAPI) {
 					clearInterval(interval);
 					currentTuiInstance = null;
 				},
-				invalidate() {},
+				invalidate() { },
 				render(width: number): string[] {
 					const branch = ctx.sessionManager.getBranch();
 					const provider = activeModelSelection.provider;
@@ -539,16 +548,12 @@ export default function (pi: ExtensionAPI) {
 					);
 					const contextStr = renderContextUsage(pct, theme);
 					const thinking = pi.getThinkingLevel();
-					const thinkColor =
-						thinking === "high"
-							? "warning"
-							: thinking === "medium"
-								? "accent"
-								: thinking === "low"
-									? "dim"
-									: "muted";
+					const shortId = shortenModelId(modelId);
 					const modelStr =
-						theme.fg(thinkColor, getModelIcon(modelId)) + " " + theme.fg("accent", modelId);
+						theme.fg("accent", getModelIcon(modelId)) +
+						" " +
+						theme.fg("accent", shortId) +
+						theme.fg("muted", ` (${thinking})`);
 
 					const leftParts = [
 						modelStr,
@@ -562,7 +567,9 @@ export default function (pi: ExtensionAPI) {
 					if (remoteUsage) leftParts.push(renderRemoteUsage(remoteUsage, theme));
 
 					const sep = theme.fg("dim", " | ");
-					return [truncateToWidth(leftParts.join(sep), width)];
+					const contentLine = truncateToWidth(leftParts.join(sep), width);
+					const barLine = theme.fg("accent", "─".repeat(width));
+					return [barLine, contentLine];
 				},
 			};
 		});
