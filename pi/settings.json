@@ -15,8 +15,9 @@
   "hideThinkingBlock": true,
   "quietStartup": true,
   "packages": [
-    "git:github.com/gjtorikian/pi-extensions",
-    "git:github.com/gjtorikian/agent-plugins"
+    "git:github.com/gjtorikian/agent-plugins",
+    "npm:pi-subagents",
+    "npm:pi-mcp-adapter"
   ],
   "theme": "dark"
 }
