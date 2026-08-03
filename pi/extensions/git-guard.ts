@@ -4,7 +4,7 @@
  * Auto-stash before each turn, notify on agent completion.
  * Combines git-checkpoint + notify + dirty-repo-guard.
  */
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 function terminalNotify(title: string, body: string): void {
   if (process.env.KITTY_WINDOW_ID) {
