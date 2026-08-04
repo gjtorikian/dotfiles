@@ -9,3 +9,4 @@ pi/auth.json
 pi/.update-check
 pi/node_modules/
 zsh/ssh-aliases.zsh
+pi/mcp-cache.json

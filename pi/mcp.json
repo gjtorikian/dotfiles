@@ -1,6 +1,17 @@
 {
   "settings": {
-    "hostConfigDiscovery": "prompt"
+    "hostConfigDiscovery": "prompt",
+    "autoAuth": true
   },
-  "mcpServers": {}
+  "mcpServers": {
+    "slack": {
+      "url": "https://mcp.slack.com/mcp",
+      "auth": "oauth",
+      "directTools": ["slack_send_message", "slack_read_thread"],
+      "oauth": {
+        "clientId": "1601185624273.8899143856786",
+        "redirectUri": "http://localhost:3118/callback"
+      }
+    }
+  }
 }
