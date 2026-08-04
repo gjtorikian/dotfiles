@@ -105,9 +105,19 @@ install_dotfiles
 # Pi agent config (with per-host overrides)
 info 'linking pi agent config'
 mkdir -p "$HOME/.pi/agent"
-for src in "$DOTFILES_ROOT"/pi/*.json; do
+# Repo-tooling and generated files that live in pi/ but are not agent config.
+# Linking package.json or tsconfig.json into ~/.pi/agent/ would hand pi a
+# manifest that describes this repo's typecheck setup, not the agent.
+PI_NOT_CONFIG=(package.json package-lock.json tsconfig.json mcp-cache.json)
+
+for src in "$DOTFILES_ROOT"/pi/*.json "$DOTFILES_ROOT"/pi/*.md; do
   [ -f "$src" ] || continue
   name=$(basename "$src")
+  skip=
+  for excluded in "${PI_NOT_CONFIG[@]}"; do
+    [ "$name" == "$excluded" ] && skip=1 && break
+  done
+  [ -n "$skip" ] && continue
   host_src="$DOTFILES_ROOT/pi/hosts/$PI_HOSTNAME/$name"
   if [ -f "$host_src" ]; then
     info "pi: host override ($PI_HOSTNAME) → $name"
@@ -115,6 +125,39 @@ for src in "$DOTFILES_ROOT"/pi/*.json; do
   else
     link_file "$src" "$HOME/.pi/agent/$name"
   fi
+done
+
+# Pi extensions and their support dirs.
+#
+# pi auto-loads every *.ts/*.js in ~/.pi/agent/extensions/. Linking each file
+# individually (rather than the directory) keeps that dir writable, so a
+# throwaway extension can still be dropped in by hand without git noticing.
+#
+# settings.json's `extensions` array is deliberately not used for these:
+# relative paths there resolve against the *current working directory*, not the
+# settings file, so they only load when pi runs from ~/.dotfiles.
+info 'linking pi extensions'
+mkdir -p "$HOME/.pi/agent/extensions"
+for src in "$DOTFILES_ROOT"/pi/extensions/*; do
+  [ -f "$src" ] || continue
+  link_file "$src" "$HOME/.pi/agent/extensions/$(basename "$src")"
+done
+
+# Imported by extensions (lib) or read by them at runtime (configs). Linked as
+# whole directories so adding a file needs no change here.
+for dir in lib configs; do
+  [ -d "$DOTFILES_ROOT/pi/$dir" ] || continue
+  link_file "$DOTFILES_ROOT/pi/$dir" "$HOME/.pi/agent/$dir"
+done
+
+# Report anything pi would load that the repo does not track. Warn rather than
+# delete: an untracked extension here is more likely to be unbackfilled work
+# than garbage, and a silent rm is how that work gets lost.
+for dst in "$HOME"/.pi/agent/extensions/*; do
+  [ -e "$dst" ] || continue
+  [ -L "$dst" ] && continue
+  fail_msg="untracked, not in dotfiles: ${dst/#$HOME/~}"
+  printf "\r\033[2K  [\033[0;33mWARN\033[0m] %s\n" "$fail_msg"
 done
 
 echo ''

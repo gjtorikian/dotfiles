@@ -15,9 +15,6 @@
     "skills/github",
     "skills/native-web-search"
   ],
-  "extensions": [
-    "extensions/custom-footer.ts"
-  ],
   "usageBudgets": {
     "day": 40000000,
     "week": 200000000

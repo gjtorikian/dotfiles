@@ -10,12 +10,15 @@ set -e
 parentDirectory="$(cd "$( dirname "$0" )" && pwd -P)"
 dotfilesDirectory="$(cd "$( dirname "$parentDirectory" )" && pwd -P)"
 
+linkOnly=""
+
 displayUsageAndExit() {
 	echo "dot -- dotfiles management"
 	echo ""
 	echo "Usage: dot [options]"
 	echo ""
 	echo "Options:"
+	echo "  -l, --link    Re-apply symlinks only; skip the git update"
 	echo "  -e, --edit    Open dotfiles directory for editing"
 	echo "  -h, --help    Show this help message and exit"
 	exit
@@ -25,6 +28,9 @@ while test $# -gt 0; do
 	case "$1" in
 		"-h"|"--help")
 			displayUsageAndExit
+			;;
+		"-l"|"--link")
+			linkOnly=1
 			;;
 		"-e"|"--edit")
 			exec "$EDITOR" "$dotfilesDirectory"
@@ -42,8 +48,15 @@ export ZSH=$HOME/.dotfiles
 
 cd "$dotfilesDirectory"
 
-# Stash any local changes, pull latest, then restore
-echo "› Updating dotfiles"
-git stash --quiet
-git pull --rebase --quiet
-git stash pop --quiet 2>/dev/null || true
+if [ -z "$linkOnly" ]; then
+	# Stash any local changes, pull latest, then restore
+	echo "› Updating dotfiles"
+	git stash --quiet
+	git pull --rebase --quiet
+	git stash pop --quiet 2>/dev/null || true
+fi
+
+# A pull can introduce new *.symlink files or pi extensions, and locally added
+# ones need linking too — so this runs either way. script/symlink is idempotent.
+echo "› Applying symlinks"
+script/symlink
