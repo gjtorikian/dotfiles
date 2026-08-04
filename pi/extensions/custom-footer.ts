@@ -1,15 +1,22 @@
 /**
  * Custom Footer Extension — Enhanced status bar
  *
- * Displays the active model plus all-model local usage rollups for the
- * current session, last 24 hours, and last 7 days. Anthropic also shows
- * account windows (5h / 7d) when OAuth usage is available.
+ * Every figure is a "how close am I to the wall" meter: percent used, with a
+ * bar and the absolute token count beside it.
+ *
+ *   ctx  — current context-window occupancy for the active model
+ *   24h  — provider-scoped tokens in the last 24h, against `usageBudgets.day`
+ *   7d   — provider-scoped tokens in the last 7 days, against `usageBudgets.week`
+ *
+ * When a provider reports real quota windows (Anthropic OAuth exposes 5h / 7d
+ * utilization), those replace the budget-based rollups — a real limit beats a
+ * self-imposed one. Costs are deliberately not shown.
  */
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth } from "@earendil-works/pi-tui";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -22,33 +29,29 @@ interface AuthFile {
 	[provider: string]: AuthEntry | undefined;
 }
 
+/** A quota window reported by the provider itself. */
 interface UsageWindow {
 	label: string;
-	remainingPct: number;
+	usedPct: number;
 	resetsAt: string;
 }
 
-interface UsageTotals {
-	input: number;
-	output: number;
-	cacheRead: number;
-	cacheWrite: number;
-	totalTokens: number;
-	cost: number;
-}
-
+/** Total tokens (input + output + cache) over each trailing window. */
 interface UsageRollups {
-	day: UsageTotals;
-	week: UsageTotals;
+	day: number;
+	week: number;
 }
 
-type RemoteUsage =
-	| {
-		kind: "windows";
-		label: string;
-		windows: UsageWindow[];
-	}
-	| null;
+/**
+ * Self-imposed token budgets, read from `usageBudgets` in settings.json.
+ * pi preserves unknown settings keys on write, so this survives its own saves.
+ */
+interface UsageBudgets {
+	day: number;
+	week: number;
+}
+
+type RemoteUsage = { windows: UsageWindow[] } | null;
 
 interface CachedRemoteUsage {
 	data: RemoteUsage;
@@ -75,6 +78,13 @@ interface ActiveModelSelection {
 const USAGE_CACHE_TTL = 120_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
+const METER_WIDTH = 6;
+
+/** Tune these, or override with `usageBudgets` in settings.json. */
+const DEFAULT_BUDGETS: UsageBudgets = {
+	day: 40_000_000,
+	week: 200_000_000,
+};
 
 // Module-level state for cross-event communication (cleared on reload)
 let currentTuiInstance: { requestRender: () => void } | null = null;
@@ -83,6 +93,7 @@ let activeModelSelection: ActiveModelSelection = {
 	id: "no-model",
 	contextWindow: 0,
 };
+let cachedBudgets: { data: UsageBudgets; fetchedAt: number } | null = null;
 
 function getAgentDir(): string {
 	const configured = process.env.PI_CODING_AGENT_DIR;
@@ -92,21 +103,42 @@ function getAgentDir(): string {
 	return configured;
 }
 
-function readAuthFile(): AuthFile {
-	const path = join(getAgentDir(), "auth.json");
-	if (!existsSync(path)) return {};
+function readJsonFile<T>(path: string): T | null {
+	if (!existsSync(path)) return null;
 
 	try {
-		return JSON.parse(readFileSync(path, "utf8")) as AuthFile;
+		return JSON.parse(readFileSync(path, "utf8")) as T;
 	} catch {
-		return {};
+		return null;
 	}
 }
 
 function getOAuthAccessToken(provider: string): string | null {
-	const entry = readAuthFile()[provider];
+	const auth = readJsonFile<AuthFile>(join(getAgentDir(), "auth.json")) ?? {};
+	const entry = auth[provider];
 	if (entry?.type !== "oauth") return null;
 	return typeof entry.access === "string" && entry.access ? entry.access : null;
+}
+
+function positiveNumber(value: unknown, fallback: number): number {
+	return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function getBudgets(): UsageBudgets {
+	if (cachedBudgets && Date.now() - cachedBudgets.fetchedAt < USAGE_CACHE_TTL) {
+		return cachedBudgets.data;
+	}
+
+	const settings = readJsonFile<{ usageBudgets?: Partial<UsageBudgets> }>(
+		join(getAgentDir(), "settings.json"),
+	);
+	const data: UsageBudgets = {
+		day: positiveNumber(settings?.usageBudgets?.day, DEFAULT_BUDGETS.day),
+		week: positiveNumber(settings?.usageBudgets?.week, DEFAULT_BUDGETS.week),
+	};
+
+	cachedBudgets = { data, fetchedAt: Date.now() };
+	return data;
 }
 
 function clampPercent(value: number): number {
@@ -151,49 +183,14 @@ function fmt(n: number): string {
 	return `${n}`;
 }
 
-function emptyTotals(): UsageTotals {
-	return {
-		input: 0,
-		output: 0,
-		cacheRead: 0,
-		cacheWrite: 0,
-		totalTokens: 0,
-		cost: 0,
-	};
-}
-
-function emptyRollups(): UsageRollups {
-	return {
-		day: emptyTotals(),
-		week: emptyTotals(),
-	};
-}
-
-function addMessageUsage(totals: UsageTotals, message: AssistantMessage): void {
-	if (!message.usage) return;
-
-	totals.input += message.usage.input || 0;
-	totals.output += message.usage.output || 0;
-	totals.cacheRead += message.usage.cacheRead || 0;
-	totals.cacheWrite += message.usage.cacheWrite || 0;
-	totals.totalTokens += message.usage.totalTokens || 0;
-	totals.cost += message.usage.cost?.total || 0;
-}
-
-function addTotals(target: UsageTotals, source: UsageTotals): void {
-	target.input += source.input;
-	target.output += source.output;
-	target.cacheRead += source.cacheRead;
-	target.cacheWrite += source.cacheWrite;
-	target.totalTokens += source.totalTokens;
-	target.cost += source.cost;
-}
-
-function mergeTotals(a: UsageTotals, b: UsageTotals): UsageTotals {
-	const merged = emptyTotals();
-	addTotals(merged, a);
-	addTotals(merged, b);
-	return merged;
+/** Total billed tokens for one message; `totalTokens` already includes cache reads/writes. */
+function messageTokens(message: AssistantMessage): number {
+	const usage = message.usage;
+	if (!usage) return 0;
+	if (usage.totalTokens) return usage.totalTokens;
+	return (
+		(usage.input || 0) + (usage.output || 0) + (usage.cacheRead || 0) + (usage.cacheWrite || 0)
+	);
 }
 
 function shortenModelId(modelId: string): string {
@@ -225,28 +222,12 @@ function getEntryTimestamp(entry: any): number {
 	return 0;
 }
 
-function collectUsageTotals(
-	entries: any[],
-	match?: (message: AssistantMessage) => boolean,
-): UsageTotals {
-	const totals = emptyTotals();
-
-	for (const entry of entries) {
-		if (entry.type !== "message" || entry.message.role !== "assistant") continue;
-		const message = entry.message as AssistantMessage;
-		if (match && !match(message)) continue;
-		addMessageUsage(totals, message);
-	}
-
-	return totals;
-}
-
 function collectUsageRollups(
 	entries: any[],
 	now: number,
 	match?: (message: AssistantMessage) => boolean,
 ): UsageRollups {
-	const rollups = emptyRollups();
+	const rollups: UsageRollups = { day: 0, week: 0 };
 	const dayCutoff = now - DAY_MS;
 	const weekCutoff = now - WEEK_MS;
 
@@ -258,21 +239,28 @@ function collectUsageRollups(
 
 		const message = entry.message as AssistantMessage;
 		if (match && !match(message)) continue;
-		addMessageUsage(rollups.week, message);
-		if (timestamp >= dayCutoff) addMessageUsage(rollups.day, message);
+
+		const tokens = messageTokens(message);
+		rollups.week += tokens;
+		if (timestamp >= dayCutoff) rollups.day += tokens;
 	}
 
 	return rollups;
 }
 
-function listSessionFiles(dir: string, excludeFile?: string): string[] {
+function listSessionFiles(dir: string, excludeFile?: string, minMtimeMs?: number): string[] {
 	if (!existsSync(dir)) return [];
 
 	const paths: string[] = [];
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
 		const path = join(dir, entry.name);
-		if (entry.isDirectory()) paths.push(...listSessionFiles(path, excludeFile));
-		if (entry.isFile() && path.endsWith(".jsonl") && path !== excludeFile) paths.push(path);
+		if (entry.isDirectory()) paths.push(...listSessionFiles(path, excludeFile, minMtimeMs));
+		if (entry.isFile() && path.endsWith(".jsonl") && path !== excludeFile) {
+			// Session files are append-only: a file not modified since the cutoff
+			// cannot contain entries newer than the cutoff, so skip reading it.
+			if (minMtimeMs !== undefined && statSync(path).mtimeMs < minMtimeMs) continue;
+			paths.push(path);
+		}
 	}
 	return paths;
 }
@@ -283,10 +271,10 @@ function collectUsageRollupsFromFiles(
 	excludeFile?: string,
 	match?: (message: AssistantMessage) => boolean,
 ): UsageRollups {
-	const rollups = emptyRollups();
+	const rollups: UsageRollups = { day: 0, week: 0 };
 	const dayCutoff = now - DAY_MS;
 	const weekCutoff = now - WEEK_MS;
-	const files = listSessionFiles(sessionsDir, excludeFile);
+	const files = listSessionFiles(sessionsDir, excludeFile, weekCutoff);
 
 	for (const file of files) {
 		let content = "";
@@ -313,8 +301,10 @@ function collectUsageRollupsFromFiles(
 
 			const message = entry.message as AssistantMessage;
 			if (match && !match(message)) continue;
-			addMessageUsage(rollups.week, message);
-			if (timestamp >= dayCutoff) addMessageUsage(rollups.day, message);
+
+			const tokens = messageTokens(message);
+			rollups.week += tokens;
+			if (timestamp >= dayCutoff) rollups.day += tokens;
 		}
 	}
 
@@ -341,17 +331,15 @@ async function fetchAnthropicUsage(): Promise<RemoteUsage> {
 		}
 
 		return {
-			kind: "windows",
-			label: "Claude",
 			windows: [
 				{
 					label: "5h",
-					remainingPct: clampPercent(100 - data.five_hour.utilization),
+					usedPct: clampPercent(data.five_hour.utilization),
 					resetsAt: data.five_hour.resets_at ?? "",
 				},
 				{
 					label: "7d",
-					remainingPct: clampPercent(100 - data.seven_day.utilization),
+					usedPct: clampPercent(data.seven_day.utilization),
 					resetsAt: data.seven_day.resets_at ?? "",
 				},
 			],
@@ -361,68 +349,34 @@ async function fetchAnthropicUsage(): Promise<RemoteUsage> {
 	}
 }
 
-function buildUsageBar(
-	remaining: number,
+/**
+ * One meter: `label ━━╌╌╌╌ 31% 12.4M`. `usedPct` of null means the ceiling is
+ * unknown, so the bar is dropped and only the absolute figure survives.
+ */
+function renderMeter(
 	label: string,
-	timeUntil: string,
+	usedPct: number | null,
+	trailing: string,
 	theme: any,
 ): string {
-	const barWidth = 5;
-	const filled = Math.max(0, Math.min(barWidth, Math.round((remaining * barWidth) / 100)));
-	const empty = barWidth - filled;
-	const barColor = remaining > 50 ? "success" : remaining > 20 ? "warning" : "error";
-	const bar = "━".repeat(filled) + "╌".repeat(empty);
+	const parts = [theme.fg("muted", label)];
 
-	return (
-		theme.fg("muted", label) +
-		" " +
-		theme.fg(barColor, bar) +
-		" " +
-		theme.fg(barColor, `${remaining}%`) +
-		theme.fg("dim", ` ↻${timeUntil}`)
-	);
-}
-
-function renderRemoteUsage(usage: Exclude<RemoteUsage, null>, theme: any): string {
-	const parts = usage.windows.map((window) =>
-		buildUsageBar(window.remainingPct, window.label, formatTimeUntil(window.resetsAt), theme),
-	);
-	return theme.fg("muted", usage.label) + " " + parts.join(theme.fg("dim", " ╱ "));
-}
-
-function fmtCost(n: number): string {
-	const abs = Math.abs(n);
-	if (abs === 0) return "$0";
-	if (abs < 0.01) return "<¢1";
-	if (abs < 1) return `¢${Math.round(abs * 100)}`;
-	if (abs < 1000) return `$${n.toFixed(2).replace(/\.00$/, "")}`;
-	if (abs < 1_000_000) return `$${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
-	return `$${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-}
-
-function renderUsageSnapshot(label: string, stats: UsageTotals, theme: any): string {
-	const parts = [theme.fg("accent", `${fmt(stats.input)}/${fmt(stats.output)}`)];
-	// Show cost with compact formatting; use (nc) for providers that don't report cost
-	const costStr = stats.cost === 0 ? "(nc)" : fmtCost(stats.cost);
-	parts.push(theme.fg("warning", costStr));
-	return theme.fg("muted", label) + " " + parts.join(" ");
-}
-
-function getContextPercent(
-	usage: { tokens: number | null; percent: number | null; contextWindow: number } | undefined,
-	contextWindow: number,
-): number | null {
-	if (!usage) return null;
-	if (usage.tokens != null && contextWindow > 0) {
-		return (usage.tokens / contextWindow) * 100;
+	if (usedPct == null) {
+		parts.push(theme.fg("dim", "—"));
+	} else {
+		const pct = clampPercent(usedPct);
+		const filled = Math.max(0, Math.min(METER_WIDTH, Math.round((pct * METER_WIDTH) / 100)));
+		const color = pct > 75 ? "error" : pct > 50 ? "warning" : "success";
+		parts.push(theme.fg(color, "━".repeat(filled) + "╌".repeat(METER_WIDTH - filled)));
+		parts.push(theme.fg(color, `${pct}%`));
 	}
-	return usage.percent;
+
+	if (trailing) parts.push(theme.fg("dim", trailing));
+	return parts.join(" ");
 }
 
-function renderContextUsage(percent: number | null, theme: any): string {
-	if (percent == null) return theme.fg("muted", "ctx ?");
-	const pctColor = percent > 75 ? "error" : percent > 50 ? "warning" : "success";
-	return theme.fg("muted", "ctx") + " " + theme.fg(pctColor, `${percent.toFixed(0)}%`);
+function percentOf(used: number, budget: number): number | null {
+	return budget > 0 ? (used / budget) * 100 : null;
 }
 
 export default function (pi: ExtensionAPI) {
@@ -486,27 +440,21 @@ export default function (pi: ExtensionAPI) {
 		const localUsageCache = new Map<string, CachedLocalUsage>();
 		let excludedSessionFile = ctx.sessionManager.getSessionFile?.() ?? undefined;
 
-		function getCachedHistoricalUsage(
-			now: number,
-			provider: string,
-			modelId: string,
-		): UsageRollups {
+		function getCachedHistoricalUsage(now: number, provider: string): UsageRollups {
 			const currentSessionFile = ctx.sessionManager.getSessionFile?.() ?? undefined;
 			if (currentSessionFile !== excludedSessionFile) {
 				excludedSessionFile = currentSessionFile;
 				localUsageCache.clear();
 			}
 
-			const cacheKey = `${provider}:${modelId}`;
-			const cached = localUsageCache.get(cacheKey);
+			const cached = localUsageCache.get(provider);
 			if (cached && Date.now() - cached.fetchedAt < USAGE_CACHE_TTL) {
 				return cached.data;
 			}
 
-			const match = (message: AssistantMessage) =>
-				message.provider === provider && message.model === modelId;
+			const match = (message: AssistantMessage) => message.provider === provider;
 			const data = collectUsageRollupsFromFiles(sessionsDir, now, currentSessionFile, match);
-			localUsageCache.set(cacheKey, { data, fetchedAt: Date.now() });
+			localUsageCache.set(provider, { data, fetchedAt: Date.now() });
 			return data;
 		}
 
@@ -531,43 +479,56 @@ export default function (pi: ExtensionAPI) {
 
 					refreshRemoteUsageIfStale(provider, () => tui.requestRender());
 
-					const isActiveModel = (message: AssistantMessage) =>
-						message.provider === provider && message.model === modelId;
-
-					// Usage stats: current model only (changes when you switch models)
-					const sessionStats = collectUsageTotals(branch, isActiveModel);
-					const branchRollups = collectUsageRollups(branch, now, isActiveModel);
-					const historicalRollups = getCachedHistoricalUsage(now, provider, modelId);
-					const dayStats = mergeTotals(historicalRollups.day, branchRollups.day);
-					const weekStats = mergeTotals(historicalRollups.week, branchRollups.week);
-
-					const usage = ctx.getContextUsage();
-					const pct = getContextPercent(
-						usage,
-						activeModelSelection.contextWindow || usage?.contextWindow || 0,
-					);
-					const contextStr = renderContextUsage(pct, theme);
 					const thinking = pi.getThinkingLevel();
-					const shortId = shortenModelId(modelId);
 					const modelStr =
 						theme.fg("accent", getModelIcon(modelId)) +
 						" " +
-						theme.fg("accent", shortId) +
+						theme.fg("accent", shortenModelId(modelId)) +
 						theme.fg("muted", ` (${thinking})`);
 
-					const leftParts = [
+					// Context: how full the window is right now, for this model.
+					const usage = ctx.getContextUsage();
+					const contextWindow =
+						activeModelSelection.contextWindow || usage?.contextWindow || 0;
+					const ctxPct =
+						usage?.tokens != null && contextWindow > 0
+							? (usage.tokens / contextWindow) * 100
+							: (usage?.percent ?? null);
+					const parts = [
 						modelStr,
-						renderUsageSnapshot("sess", sessionStats, theme),
-						renderUsageSnapshot("24h", dayStats, theme),
-						renderUsageSnapshot("7d", weekStats, theme),
-						contextStr,
+						renderMeter("ctx", ctxPct, usage?.tokens != null ? fmt(usage.tokens) : "", theme),
 					];
 
+					// Real provider quota wins; budget-based rollups are the fallback.
 					const remoteUsage = getCacheEntry(provider).data;
-					if (remoteUsage) leftParts.push(renderRemoteUsage(remoteUsage, theme));
+					if (remoteUsage) {
+						for (const window of remoteUsage.windows) {
+							parts.push(
+								renderMeter(
+									window.label,
+									window.usedPct,
+									`↻${formatTimeUntil(window.resetsAt)}`,
+									theme,
+								),
+							);
+						}
+					} else {
+						// Provider-scoped, not model-scoped: a budget covers everything
+						// you spend on that account, whichever model you switched to.
+						const isActiveProvider = (message: AssistantMessage) =>
+							message.provider === provider;
+						const branchRollups = collectUsageRollups(branch, now, isActiveProvider);
+						const historical = getCachedHistoricalUsage(now, provider);
+						const day = historical.day + branchRollups.day;
+						const week = historical.week + branchRollups.week;
+						const budgets = getBudgets();
 
-					const sep = theme.fg("dim", " | ");
-					const contentLine = truncateToWidth(leftParts.join(sep), width);
+						parts.push(renderMeter("24h", percentOf(day, budgets.day), fmt(day), theme));
+						parts.push(renderMeter("7d", percentOf(week, budgets.week), fmt(week), theme));
+					}
+
+					const sep = theme.fg("dim", " │ ");
+					const contentLine = truncateToWidth(parts.join(sep), width);
 					const barLine = theme.fg("accent", "─".repeat(width));
 					return [barLine, contentLine];
 				},
