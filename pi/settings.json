@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.83.0",
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-fable-5",
+  "defaultProvider": "fireworks",
+  "defaultModel": "accounts/fireworks/models/glm-5p2",
   "defaultThinkingLevel": "xhigh",
   "enabledModels": [
     "anthropic/claude-opus-5",
@@ -18,6 +18,10 @@
   "extensions": [
     "extensions/custom-footer.ts"
   ],
+  "usageBudgets": {
+    "day": 40000000,
+    "week": 200000000
+  },
   "hideThinkingBlock": true,
   "quietStartup": true,
   "packages": [
