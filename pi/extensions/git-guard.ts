@@ -16,8 +16,6 @@ function terminalNotify(title: string, body: string): void {
 }
 
 export default function (pi: ExtensionAPI) {
-  let turnCount = 0;
-
   // Warn on dirty repo at session start
   pi.on("session_start", async (_event, ctx) => {
     try {
@@ -29,17 +27,8 @@ export default function (pi: ExtensionAPI) {
     } catch { /* not a git repo, ignore */ }
   });
 
-  // Stash checkpoint before each turn
-  pi.on("turn_start", async () => {
-    turnCount++;
-    try {
-      await pi.exec("git", ["stash", "create", "-m", `oh-pi-turn-${turnCount}`]);
-    } catch { /* not a git repo */ }
-  });
-
   // Notify when agent is done
   pi.on("agent_end", async () => {
-    terminalNotify("oh-pi", `Done after ${turnCount} turn(s). Ready for input.`);
-    turnCount = 0;
+    terminalNotify("oh-pi", `Done. Ready for input.`);
   });
 }
