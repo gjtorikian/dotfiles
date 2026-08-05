@@ -4,3 +4,4 @@
 *.orig
 
 **/.claude/settings.local.json
+.pi-subagents/
