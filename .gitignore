@@ -12,3 +12,6 @@ zsh/ssh-aliases.zsh
 pi/mcp-cache.json
 pi/models-store.json
 pi/run-history.jsonl
+# Symlinked from pi/hosts/<host>/ by script/symlink
+pi/models.json
+pi/settings.json

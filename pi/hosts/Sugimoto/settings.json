@@ -1,0 +1,32 @@
+{
+  "lastChangelogVersion": "0.84.0",
+  "defaultProvider": "fireworks",
+  "defaultModel": "accounts/fireworks/models/glm-5p2",
+  "defaultThinkingLevel": "xhigh",
+  "enabledModels": [
+    "anthropic/claude-opus-5",
+    "anthropic/claude-fable-5",
+    "openai-codex/gpt-5.6-sol",
+    "fireworks/accounts/fireworks/models/glm-5p2"
+  ],
+  "skills": [
+    "skills/commit",
+    "skills/git-workflow",
+    "skills/github",
+    "skills/native-web-search"
+  ],
+  "usageBudgets": {
+    "day": 40000000,
+    "week": 200000000
+  },
+  "hideThinkingBlock": true,
+  "quietStartup": true,
+  "packages": [
+    "git:github.com/gjtorikian/agent-plugins",
+    "npm:pi-subagents",
+    "npm:pi-mcp-adapter",
+    "npm:@quintinshaw/pi-dynamic-workflows",
+    "npm:@juicesharp/rpiv-ask-user-question"
+  ],
+  "theme": "nightowl"
+}
