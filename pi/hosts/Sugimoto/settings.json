@@ -9,12 +9,6 @@
     "openai-codex/gpt-5.6-sol",
     "fireworks/accounts/fireworks/models/glm-5p2"
   ],
-  "skills": [
-    "skills/commit",
-    "skills/git-workflow",
-    "skills/github",
-    "skills/native-web-search"
-  ],
   "usageBudgets": {
     "day": 40000000,
     "week": 200000000
@@ -26,7 +20,9 @@
     "npm:pi-subagents",
     "npm:pi-mcp-adapter",
     "npm:@quintinshaw/pi-dynamic-workflows",
-    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "git:github.com/workos/agent-irc",
+    "npm:pi-autoresearch"
   ],
   "theme": "nightowl"
 }

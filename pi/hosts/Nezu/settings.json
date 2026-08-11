@@ -10,12 +10,6 @@
     "openrouter/z-ai/glm-5.2",
     "openrouter/z-ai/glm-5-turbo"
   ],
-  "skills": [
-    "skills/commit",
-    "skills/git-workflow",
-    "skills/github",
-    "skills/native-web-search"
-  ],
   "usageBudgets": {
     "day": 40000000,
     "week": 200000000
@@ -27,7 +21,8 @@
     "npm:pi-subagents",
     "npm:pi-mcp-adapter",
     "npm:@quintinshaw/pi-dynamic-workflows",
-    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:pi-autoresearch"
   ],
   "theme": "nightowl"
 }
