@@ -15,8 +15,9 @@
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { truncateToWidth } from "@earendil-works/pi-tui";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { execFile } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -75,10 +76,30 @@ interface ActiveModelSelection {
 	contextWindow: number;
 }
 
+/**
+ * Open PR number for a branch. Only open PRs are ever stored, so the footer can
+ * show a bare `#101` instead of spelling out a state that is always the same.
+ */
+interface CachedPrInfo {
+	number: number | null;
+	fetchedAt: number;
+	inFlight: boolean;
+	branch: string;
+}
+
+/** PR lookups persisted between sessions, keyed by cwd + branch. */
+interface PrCacheFile {
+	[key: string]: { number: number | null; fetchedAt: number } | undefined;
+}
+
 const USAGE_CACHE_TTL = 120_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
 const METER_WIDTH = 6;
+/** A PR number never changes once opened; only merging or closing does. */
+const PR_CACHE_TTL = 600_000;
+/** Forget branches untouched for a month so the cache file cannot grow forever. */
+const PR_CACHE_MAX_AGE = 30 * DAY_MS;
 
 /** Tune these, or override with `usageBudgets` in settings.json. */
 const DEFAULT_BUDGETS: UsageBudgets = {
@@ -349,6 +370,71 @@ async function fetchAnthropicUsage(): Promise<RemoteUsage> {
 	}
 }
 
+function getPrCachePath(): string {
+	return join(getAgentDir(), "pr-cache.json");
+}
+
+function prCacheKey(branch: string): string {
+	return `${process.cwd()}\u0000${branch}`;
+}
+
+/**
+ * Reading the last answer from disk is what keeps `gh` off the startup path: a
+ * new session paints the PR from cache instead of waiting on a subprocess.
+ */
+function readPrCache(key: string): { number: number | null; fetchedAt: number } | null {
+	const entry = readJsonFile<PrCacheFile>(getPrCachePath())?.[key];
+	if (!entry || typeof entry.fetchedAt !== "number") return null;
+	return {
+		number: typeof entry.number === "number" ? entry.number : null,
+		fetchedAt: entry.fetchedAt,
+	};
+}
+
+function writePrCache(key: string, number: number | null): void {
+	const cache = readJsonFile<PrCacheFile>(getPrCachePath()) ?? {};
+	const cutoff = Date.now() - PR_CACHE_MAX_AGE;
+	for (const [existing, entry] of Object.entries(cache)) {
+		if (typeof entry?.fetchedAt !== "number" || entry.fetchedAt < cutoff) delete cache[existing];
+	}
+	cache[key] = { number, fetchedAt: Date.now() };
+
+	try {
+		writeFileSync(getPrCachePath(), JSON.stringify(cache));
+	} catch {
+		// A cache we cannot persist is not worth failing a render over.
+	}
+}
+
+/**
+ * Open PR number for the checked-out branch via `gh`, or null when there is no
+ * open PR, no `gh`, or no GitHub remote. Closed and merged PRs resolve to null,
+ * which is what lets the footer omit the state entirely.
+ */
+async function fetchOpenPrNumber(): Promise<number | null> {
+	return new Promise((resolve) => {
+		execFile(
+			"gh",
+			["pr", "view", "--json", "number,state"],
+			// The update notifier roughly doubles gh's runtime, and we never read it.
+			{ timeout: 3000, env: { ...process.env, GH_NO_UPDATE_NOTIFIER: "1" } },
+			(err, stdout) => {
+				if (err) return resolve(null);
+				try {
+					const data = JSON.parse(stdout) as { number?: unknown; state?: unknown };
+					if (data.state === "OPEN" && typeof data.number === "number") {
+						resolve(data.number);
+						return;
+					}
+					resolve(null);
+				} catch {
+					resolve(null);
+				}
+			},
+		);
+	});
+}
+
 /**
  * One meter: `label ━━╌╌╌╌ 31% 12.4M`. `usedPct` of null means the ceiling is
  * unknown, so the bar is dropped and only the absolute figure survives.
@@ -379,11 +465,77 @@ function percentOf(used: number, budget: number): number | null {
 	return budget > 0 ? (used / budget) * 100 : null;
 }
 
+/** Separator line carrying the git branch and open PR: `── branch  #101 ────`. */
+function renderGitSeparator(
+	width: number,
+	branch: string | null,
+	prNumber: number | null,
+	theme: any,
+): string {
+	const segments: string[] = [];
+	if (branch) segments.push(theme.fg("muted", branch));
+	if (prNumber != null) segments.push(theme.fg("accent", `#${prNumber}`));
+
+	const prefix = theme.fg("accent", "──");
+	const remaining = Math.max(0, width - 2);
+	const label = segments.length ? ` ${segments.join("  ")} ` : "";
+	const labelRender =
+		visibleWidth(label) > remaining ? truncateToWidth(label, remaining, "") : label;
+	const fill = "─".repeat(Math.max(0, remaining - visibleWidth(labelRender)));
+	return prefix + labelRender + theme.fg("accent", fill);
+}
+
 export default function (pi: ExtensionAPI) {
 	const remoteUsageCache = new Map<string, CachedRemoteUsage>();
 	const remoteFetchers: Record<string, () => Promise<RemoteUsage>> = {
 		anthropic: fetchAnthropicUsage,
 	};
+
+	// Open PR for the current git branch, seeded from disk so startup pays nothing.
+	let cachedPrInfo: CachedPrInfo = { number: null, fetchedAt: 0, inFlight: false, branch: "" };
+
+	function refreshPrInfoIfStale(branch: string | null, onUpdate: () => void) {
+		if (!branch) {
+			if (cachedPrInfo.branch || cachedPrInfo.number != null) {
+				cachedPrInfo = { number: null, fetchedAt: 0, inFlight: false, branch: "" };
+				onUpdate();
+			}
+			return;
+		}
+
+		// First sight of a branch: adopt the stored answer, so the very first frame
+		// already shows the PR and only a stale cache costs a subprocess.
+		if (cachedPrInfo.branch !== branch) {
+			const stored = readPrCache(prCacheKey(branch));
+			cachedPrInfo = {
+				number: stored?.number ?? null,
+				fetchedAt: stored?.fetchedAt ?? 0,
+				inFlight: false,
+				branch,
+			};
+		}
+		if (cachedPrInfo.inFlight) return;
+		if (Date.now() - cachedPrInfo.fetchedAt < PR_CACHE_TTL) return;
+
+		cachedPrInfo.inFlight = true;
+		fetchOpenPrNumber()
+			.then((number) => {
+				cachedPrInfo.number = number;
+				cachedPrInfo.fetchedAt = Date.now();
+				writePrCache(prCacheKey(branch), number);
+				onUpdate();
+			})
+			.catch(() => {
+				cachedPrInfo.fetchedAt = Date.now();
+			})
+			.finally(() => {
+				cachedPrInfo.inFlight = false;
+			});
+	}
+
+	function getCachedPrNumber(): number | null {
+		return cachedPrInfo.number;
+	}
 
 	function getCacheEntry(provider: string): CachedRemoteUsage {
 		const cached = remoteUsageCache.get(provider);
@@ -473,11 +625,13 @@ export default function (pi: ExtensionAPI) {
 				invalidate() { },
 				render(width: number): string[] {
 					const branch = ctx.sessionManager.getBranch();
+					const gitBranch = footerData.getGitBranch();
 					const provider = activeModelSelection.provider;
 					const modelId = activeModelSelection.id;
 					const now = Date.now();
 
 					refreshRemoteUsageIfStale(provider, () => tui.requestRender());
+					refreshPrInfoIfStale(gitBranch, () => tui.requestRender());
 
 					const thinking = pi.getThinkingLevel();
 					const modelStr =
@@ -529,7 +683,7 @@ export default function (pi: ExtensionAPI) {
 
 					const sep = theme.fg("dim", " │ ");
 					const contentLine = truncateToWidth(parts.join(sep), width);
-					const barLine = theme.fg("accent", "─".repeat(width));
+					const barLine = renderGitSeparator(width, gitBranch, getCachedPrNumber(), theme);
 					return [barLine, contentLine];
 				},
 			};
