@@ -2,7 +2,7 @@
 name: worker
 description: Implementation agent for normal tasks and approved oracle handoffs
 aliases: 'developer, coder, implementer, develop'
-model: openai-codex/gpt-6-astra
+model: baseten/zai-org/GLM-5.3
 thinking: max
 systemPromptMode: replace
 inheritProjectContext: true

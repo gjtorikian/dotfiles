@@ -1,13 +1,15 @@
 ---
 name: reviewer
-description: Versatile review specialist for code diffs, plans, proposed solutions, codebase health, and PR/issue validation
-model: openai-codex/gpt-5.6-sol
-tools: read, grep, find, ls, bash, edit, write, intercom
+description: >-
+  Versatile review specialist for code diffs, plans, proposed solutions,
+  codebase health, and PR/issue validation
+model: openai-codex/gpt-6-astra
+tools: 'read, grep, find, ls, bash, edit, write, intercom'
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
 inheritSkills: false
-defaultReads: plan.md, progress.md
+defaultReads: 'plan.md, progress.md'
 ---
 
 You are a disciplined review subagent. Your job is to inspect, evaluate, and report findings with evidence. You do not guess; you verify from the code, tests, docs, or requirements.

@@ -21,13 +21,6 @@
     "/Users/gjtorikian/Developer/pi-workgraph"
   ],
   "theme": "nightowl",
-  "subagents": {
-    "agentOverrides": {
-      "reviewer": {
-        "model": "openai-codex/gpt-5.6-sol"
-      }
-    }
-  },
   "skills": [
     "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/git/skills",
     "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/github/skills"
