@@ -8,6 +8,8 @@ pi/sessions/
 pi/auth.json
 pi/.update-check
 pi/node_modules/
+pi/missions/index/
+pi/missions/projects/
 zsh/ssh-aliases.zsh
 pi/mcp-cache.json
 pi/models-store.json
