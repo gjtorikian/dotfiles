@@ -1,14 +1,8 @@
 {
-  "lastChangelogVersion": "0.84.0",
+  "lastChangelogVersion": "0.85.1",
   "defaultProvider": "fireworks",
   "defaultModel": "accounts/fireworks/models/glm-5p2",
-  "defaultThinkingLevel": "xhigh",
-  "enabledModels": [
-    "anthropic/claude-opus-5",
-    "anthropic/claude-fable-5",
-    "openai-codex/gpt-5.6-sol",
-    "fireworks/accounts/fireworks/models/glm-5p2"
-  ],
+  "defaultThinkingLevel": "max",
   "usageBudgets": {
     "day": 40000000,
     "week": 200000000
@@ -22,7 +16,20 @@
     "npm:@quintinshaw/pi-dynamic-workflows",
     "npm:@juicesharp/rpiv-ask-user-question",
     "git:github.com/workos/agent-irc",
-    "npm:pi-autoresearch"
+    "npm:pi-autoresearch",
+    "git:github.com/DietrichGebert/ponytail",
+    "/Users/gjtorikian/Developer/pi-workgraph"
   ],
-  "theme": "nightowl"
+  "theme": "nightowl",
+  "subagents": {
+    "agentOverrides": {
+      "reviewer": {
+        "model": "openai-codex/gpt-5.6-sol"
+      }
+    }
+  },
+  "skills": [
+    "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/git/skills",
+    "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/github/skills"
+  ]
 }
