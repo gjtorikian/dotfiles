@@ -9,9 +9,17 @@ function gpip() {
     PIP_REQUIRE_VIRTUALENV="" pip "$@"
 }
 
-# Lazy-load pyenv for faster shell startup
-if [[ -d "$PYENV_ROOT" ]]; then
-  export PATH="$HOME/.pyenv/shims:$PATH"
+# Let mise own Python when available. With both shim directories on PATH,
+# their system-Python fallbacks can resolve to each other indefinitely.
+if command -v mise &> /dev/null; then
+  # Also clean up PATH and lazy wrappers inherited from the previous setup.
+  path=("${(@)path:#${PYENV_ROOT}/shims}")
+  if (( $+functions[_pyenv_init] )); then
+    unfunction _pyenv_init python python3 pip pip3 pyenv 2>/dev/null || true
+  fi
+elif [[ -d "$PYENV_ROOT" ]]; then
+  # Lazy-load pyenv on machines without mise.
+  export PATH="$PYENV_ROOT/shims:$PATH"
 
   _pyenv_init() {
     unfunction python python3 pip pip3 pyenv 2>/dev/null
