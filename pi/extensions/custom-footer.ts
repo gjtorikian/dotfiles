@@ -76,28 +76,39 @@ interface ActiveModelSelection {
 	contextWindow: number;
 }
 
-/**
- * Open PR number for a branch. Only open PRs are ever stored, so the footer can
- * show a bare `#101` instead of spelling out a state that is always the same.
- */
-interface CachedPrInfo {
+type PrStatus = "changes_requested" | "pending" | "ready";
+
+interface PrInfo {
 	number: number | null;
+	status: PrStatus;
+}
+
+interface PrResponse {
+	number?: unknown;
+	state?: string;
+	isDraft?: boolean;
+	reviewDecision?: string;
+	mergeStateStatus?: string;
+	latestReviews?: Array<{ state?: string }>;
+}
+
+interface CachedPrInfo extends PrInfo {
 	fetchedAt: number;
 	inFlight: boolean;
-	branch: string;
+	key: string;
 }
 
 /** PR lookups persisted between sessions, keyed by cwd + branch. */
 interface PrCacheFile {
-	[key: string]: { number: number | null; fetchedAt: number } | undefined;
+	[key: string]: { number: number | null; status?: PrStatus; fetchedAt: number } | undefined;
 }
 
 const USAGE_CACHE_TTL = 120_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
 const METER_WIDTH = 6;
-/** A PR number never changes once opened; only merging or closing does. */
-const PR_CACHE_TTL = 600_000;
+/** Reviews and merge readiness can change while the agent is idle. */
+const PR_CACHE_TTL = 60_000;
 /** Forget branches untouched for a month so the cache file cannot grow forever. */
 const PR_CACHE_MAX_AGE = 30 * DAY_MS;
 
@@ -374,30 +385,33 @@ function getPrCachePath(): string {
 	return join(getAgentDir(), "pr-cache.json");
 }
 
-function prCacheKey(branch: string): string {
-	return `${process.cwd()}\u0000${branch}`;
+function prCacheKey(cwd: string, branch: string): string {
+	return `${cwd}\u0000${branch}`;
 }
 
 /**
  * Reading the last answer from disk is what keeps `gh` off the startup path: a
  * new session paints the PR from cache instead of waiting on a subprocess.
  */
-function readPrCache(key: string): { number: number | null; fetchedAt: number } | null {
+function readPrCache(key: string): (PrInfo & { fetchedAt: number }) | null {
 	const entry = readJsonFile<PrCacheFile>(getPrCachePath())?.[key];
 	if (!entry || typeof entry.fetchedAt !== "number") return null;
+	const hasStatus = ["changes_requested", "pending", "ready"].includes(entry.status ?? "");
 	return {
 		number: typeof entry.number === "number" ? entry.number : null,
-		fetchedAt: entry.fetchedAt,
+		status: hasStatus ? entry.status! : "pending",
+		// Number-only caches need an immediate review-status lookup.
+		fetchedAt: hasStatus ? entry.fetchedAt : 0,
 	};
 }
 
-function writePrCache(key: string, number: number | null): void {
+function writePrCache(key: string, info: PrInfo): void {
 	const cache = readJsonFile<PrCacheFile>(getPrCachePath()) ?? {};
 	const cutoff = Date.now() - PR_CACHE_MAX_AGE;
 	for (const [existing, entry] of Object.entries(cache)) {
 		if (typeof entry?.fetchedAt !== "number" || entry.fetchedAt < cutoff) delete cache[existing];
 	}
-	cache[key] = { number, fetchedAt: Date.now() };
+	cache[key] = { number: info.number, status: info.status, fetchedAt: Date.now() };
 
 	try {
 		writeFileSync(getPrCachePath(), JSON.stringify(cache));
@@ -406,29 +420,58 @@ function writePrCache(key: string, number: number | null): void {
 	}
 }
 
-/**
- * Open PR number for the checked-out branch via `gh`, or null when there is no
- * open PR, no `gh`, or no GitHub remote. Closed and merged PRs resolve to null,
- * which is what lets the footer omit the state entirely.
- */
-async function fetchOpenPrNumber(): Promise<number | null> {
-	return new Promise((resolve) => {
+function getPrStatus(data: PrResponse): PrStatus {
+	// Repositories without required reviews may have no aggregate decision.
+	const reviews = data.latestReviews ?? [];
+	const changesRequested =
+		data.reviewDecision === "CHANGES_REQUESTED" ||
+		(!data.reviewDecision && reviews.some((review) => review.state === "CHANGES_REQUESTED"));
+	if (changesRequested) return "changes_requested";
+
+	const approved =
+		data.reviewDecision === "APPROVED" ||
+		(!data.reviewDecision && reviews.some((review) => review.state === "APPROVED"));
+	const mergeReady = data.mergeStateStatus === "CLEAN" || data.mergeStateStatus === "HAS_HOOKS";
+	return approved && data.isDraft === false && mergeReady ? "ready" : "pending";
+}
+
+/** Only open PRs appear; lookup failures retain the number with a pending status. */
+async function fetchOpenPrInfo(cwd: string, branch: string): Promise<PrInfo> {
+	return new Promise((resolve, reject) => {
 		execFile(
 			"gh",
-			["pr", "view", "--json", "number,state"],
+			[
+				"pr",
+				"view",
+				branch,
+				"--json",
+				"number,state,isDraft,reviewDecision,mergeStateStatus,latestReviews",
+			],
 			// The update notifier roughly doubles gh's runtime, and we never read it.
-			{ timeout: 3000, env: { ...process.env, GH_NO_UPDATE_NOTIFIER: "1" } },
-			(err, stdout) => {
-				if (err) return resolve(null);
+			{ cwd, timeout: 5000, env: { ...process.env, GH_NO_UPDATE_NOTIFIER: "1" } },
+			(err, stdout, stderr) => {
+				if (err) {
+					if (stderr.startsWith("no pull requests found for branch ")) {
+						return resolve({ number: null, status: "pending" });
+					}
+					return reject(err);
+				}
 				try {
-					const data = JSON.parse(stdout) as { number?: unknown; state?: unknown };
-					if (data.state === "OPEN" && typeof data.number === "number") {
-						resolve(data.number);
+					const data = JSON.parse(stdout) as PrResponse;
+					if (data.state === "CLOSED" || data.state === "MERGED") {
+						resolve({ number: null, status: "pending" });
 						return;
 					}
-					resolve(null);
-				} catch {
-					resolve(null);
+					if (
+						data.state !== "OPEN" ||
+						!Number.isSafeInteger(data.number) ||
+						Number(data.number) <= 0
+					) {
+						throw new Error("Invalid PR response");
+					}
+					resolve({ number: data.number as number, status: getPrStatus(data) });
+				} catch (error) {
+					reject(error);
 				}
 			},
 		);
@@ -466,18 +509,20 @@ function percentOf(used: number, budget: number): number | null {
 }
 
 /** Separator line carrying the git branch and open PR: `── branch  #101 ────`. */
-function renderGitSeparator(
-	width: number,
-	branch: string | null,
-	prNumber: number | null,
-	theme: any,
-): string {
+function renderGitSeparator(width: number, branch: string | null, pr: PrInfo, theme: any): string {
+	if (width <= 2) return theme.fg("accent", "─".repeat(Math.max(0, width)));
+	const color =
+		pr.status === "changes_requested" ? "error" : pr.status === "ready" ? "success" : "warning";
+	const prLabel = pr.number != null ? theme.fg(color, `#${pr.number}`) : "";
+	const remaining = width - 2;
 	const segments: string[] = [];
-	if (branch) segments.push(theme.fg("muted", branch));
-	if (prNumber != null) segments.push(theme.fg("accent", `#${prNumber}`));
+	// Keep the PR visible when a long branch name fills a narrow terminal.
+	const branchWidth = Math.max(0, remaining - visibleWidth(prLabel) - (prLabel ? 4 : 2));
+	if (branch && branchWidth > 0)
+		segments.push(theme.fg("muted", truncateToWidth(branch, branchWidth)));
+	if (prLabel) segments.push(prLabel);
 
 	const prefix = theme.fg("accent", "──");
-	const remaining = Math.max(0, width - 2);
 	const label = segments.length ? ` ${segments.join("  ")} ` : "";
 	const labelRender =
 		visibleWidth(label) > remaining ? truncateToWidth(label, remaining, "") : label;
@@ -492,49 +537,50 @@ export default function (pi: ExtensionAPI) {
 	};
 
 	// Open PR for the current git branch, seeded from disk so startup pays nothing.
-	let cachedPrInfo: CachedPrInfo = { number: null, fetchedAt: 0, inFlight: false, branch: "" };
+	let cachedPrInfo: CachedPrInfo = {
+		number: null,
+		status: "pending",
+		fetchedAt: 0,
+		inFlight: false,
+		key: "",
+	};
 
-	function refreshPrInfoIfStale(branch: string | null, onUpdate: () => void) {
+	function refreshPrInfoIfStale(cwd: string, branch: string | null, onUpdate: () => void) {
+		const key = branch ? prCacheKey(cwd, branch) : "";
+		// First sight of a branch: paint the stored answer while refreshing it.
+		if (cachedPrInfo.key !== key) {
+			const stored = key ? readPrCache(key) : null;
+			cachedPrInfo = {
+				number: stored?.number ?? null,
+				status: stored?.status ?? "pending",
+				fetchedAt: stored?.fetchedAt ?? 0,
+				inFlight: false,
+				key,
+			};
+		}
 		if (!branch) {
-			if (cachedPrInfo.branch || cachedPrInfo.number != null) {
-				cachedPrInfo = { number: null, fetchedAt: 0, inFlight: false, branch: "" };
-				onUpdate();
-			}
 			return;
 		}
 
-		// First sight of a branch: adopt the stored answer, so the very first frame
-		// already shows the PR and only a stale cache costs a subprocess.
-		if (cachedPrInfo.branch !== branch) {
-			const stored = readPrCache(prCacheKey(branch));
-			cachedPrInfo = {
-				number: stored?.number ?? null,
-				fetchedAt: stored?.fetchedAt ?? 0,
-				inFlight: false,
-				branch,
-			};
-		}
-		if (cachedPrInfo.inFlight) return;
-		if (Date.now() - cachedPrInfo.fetchedAt < PR_CACHE_TTL) return;
+		const entry = cachedPrInfo;
+		if (entry.inFlight) return;
+		if (Date.now() - entry.fetchedAt < PR_CACHE_TTL) return;
 
-		cachedPrInfo.inFlight = true;
-		fetchOpenPrNumber()
-			.then((number) => {
-				cachedPrInfo.number = number;
-				cachedPrInfo.fetchedAt = Date.now();
-				writePrCache(prCacheKey(branch), number);
-				onUpdate();
+		entry.inFlight = true;
+		fetchOpenPrInfo(cwd, branch)
+			.then((info) => {
+				// An old branch's response must not overwrite the current branch.
+				Object.assign(entry, info);
+				writePrCache(key, info);
 			})
 			.catch(() => {
-				cachedPrInfo.fetchedAt = Date.now();
+				entry.status = "pending";
 			})
 			.finally(() => {
-				cachedPrInfo.inFlight = false;
+				entry.fetchedAt = Date.now();
+				entry.inFlight = false;
+				if (cachedPrInfo === entry) onUpdate();
 			});
-	}
-
-	function getCachedPrNumber(): number | null {
-		return cachedPrInfo.number;
 	}
 
 	function getCacheEntry(provider: string): CachedRemoteUsage {
@@ -631,7 +677,7 @@ export default function (pi: ExtensionAPI) {
 					const now = Date.now();
 
 					refreshRemoteUsageIfStale(provider, () => tui.requestRender());
-					refreshPrInfoIfStale(gitBranch, () => tui.requestRender());
+					refreshPrInfoIfStale(ctx.cwd, gitBranch, () => tui.requestRender());
 
 					const thinking = pi.getThinkingLevel();
 					const modelStr =
@@ -683,7 +729,7 @@ export default function (pi: ExtensionAPI) {
 
 					const sep = theme.fg("dim", " │ ");
 					const contentLine = truncateToWidth(parts.join(sep), width);
-					const barLine = renderGitSeparator(width, gitBranch, getCachedPrNumber(), theme);
+					const barLine = renderGitSeparator(width, gitBranch, cachedPrInfo, theme);
 					return [barLine, contentLine];
 				},
 			};
