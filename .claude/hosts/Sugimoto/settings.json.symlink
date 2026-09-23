@@ -9,6 +9,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5-1[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -47,7 +48,6 @@
     "command": "/Users/gjtorikian/.dotfiles/bin/claude-status"
   },
   "enabledPlugins": {
-    "dx@workos-internal": true,
     "ideation@nicknisi": true,
     "skill-creator@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
@@ -63,12 +63,6 @@
     "eli5@gjtorikian-plugins": true
   },
   "extraKnownMarketplaces": {
-    "workos-internal": {
-      "source": {
-        "source": "github",
-        "repo": "workos/agent-plugins-internal"
-      }
-    },
     "sessions": {
       "source": {
         "source": "directory",
@@ -89,11 +83,11 @@
       "autoUpdate": true
     }
   },
+  "feedbackDrafts": "off",
   "effortLevel": "xhigh",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "feedbackDrafts": "off"
+  "skipAutoPermissionPrompt": true
 }

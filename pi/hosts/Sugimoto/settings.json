@@ -1,7 +1,7 @@
 {
-  "lastChangelogVersion": "0.85.1",
-  "defaultProvider": "fireworks",
-  "defaultModel": "accounts/fireworks/models/glm-5p2",
+  "lastChangelogVersion": "0.86.1",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-fable-5-1",
   "defaultThinkingLevel": "max",
   "usageBudgets": {
     "day": 40000000,
@@ -15,10 +15,10 @@
     "npm:pi-mcp-adapter",
     "npm:@quintinshaw/pi-dynamic-workflows",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "git:github.com/workos/agent-irc",
     "npm:pi-autoresearch",
     "git:github.com/DietrichGebert/ponytail",
-    "/Users/gjtorikian/Developer/pi-workgraph"
+    "/Users/gjtorikian/Developer/pi-workgraph",
+    "npm:@mhingston5/jev-cli"
   ],
   "theme": "nightowl",
   "skills": [
