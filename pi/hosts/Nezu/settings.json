@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.84.0",
   "defaultProvider": "openrouter",
-  "defaultModel": "z-ai/glm-5.2",
+  "defaultModel": "z-ai/glm-5.3",
   "defaultThinkingLevel": "xhigh",
   "enabledModels": [
     "anthropic/claude-opus-5",
@@ -21,7 +21,8 @@
     "npm:pi-subagents",
     "npm:@quintinshaw/pi-dynamic-workflows",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:pi-autoresearch"
+    "npm:pi-autoresearch",
+    "git:github.com/DietrichGebert/ponytail"
   ],
   "theme": "nightowl"
 }

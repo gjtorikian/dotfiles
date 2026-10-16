@@ -68,28 +68,15 @@ link_nested () {
   return 1
 }
 
-# Resolve host-specific override for a source file.
-# Looks for hosts/<hostname>/<basename> next to the source file's parent dir.
-# e.g. .claude/settings.json.symlink → .claude/hosts/Nezu/settings.json.symlink
-resolve_host_override () {
-  local src=$1
-  local dir=$(dirname "$src")
-  local name=$(basename "$src")
-  local host_src="$dir/hosts/$PI_HOSTNAME/$name"
-  if [ -f "$host_src" ]; then
-    info "host override ($PI_HOSTNAME) → ${host_src#$DOTFILES_ROOT/}" >&2
-    echo "$host_src"
-  else
-    echo "$src"
-  fi
-}
-
 install_dotfiles () {
   info 'installing dotfiles'
 
-  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 3 -name '*.symlink' -not -path '*.git*' -not -path '*/hosts/*')
+  # Host-specific files live in hosts/<hostname>/ (e.g.
+  # .claude/hosts/Nezu/settings.json.symlink) and have no shared counterpart;
+  # only the current host's are picked up.
+  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 4 -name '*.symlink' -not -path '*.git*' \
+    \( -not -path '*/hosts/*' -o -path "*/hosts/$PI_HOSTNAME/*" \))
   do
-    src=$(resolve_host_override "$src")
     filename=".$(basename "${src%.*}")"
     dst="$HOME/$filename"
 
