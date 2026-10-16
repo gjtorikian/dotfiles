@@ -19,7 +19,6 @@
   "packages": [
     "git:github.com/gjtorikian/agent-plugins",
     "npm:pi-subagents",
-    "npm:pi-mcp-adapter",
     "npm:@quintinshaw/pi-dynamic-workflows",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoresearch"

@@ -1,24 +1,20 @@
 {
-  "settings": {
-    "hostConfigDiscovery": "prompt",
-    "autoAuth": true
-  },
   "mcpServers": {
     "linear": {
-      "url": "https://mcp.linear.app/mcp",
-      "auth": "oauth"
+      "url": "https://mcp.linear.app/mcp"
     },
     "notion": {
-      "url": "https://mcp.notion.com/mcp",
-      "auth": "oauth"
+      "url": "https://mcp.notion.com/mcp"
     },
     "slack": {
       "url": "https://mcp.slack.com/mcp",
-      "auth": "oauth",
-      "directTools": ["slack_send_message", "slack_read_thread"],
+      "toolExposure": {
+        "slack_send_message": "direct",
+        "slack_read_thread": "direct"
+      },
       "oauth": {
         "clientId": "1601185624273.8899143856786",
-        "redirectUri": "http://localhost:3118/callback"
+        "callbackUrl": "http://localhost:3118/callback"
       }
     }
   }

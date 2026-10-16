@@ -12,6 +12,7 @@ pi/missions/index/
 pi/missions/projects/
 zsh/ssh-aliases.zsh
 pi/mcp-cache.json
+pi/mcp-auth.json
 pi/models-store.json
 pi/run-history.jsonl
 # Symlinked from pi/hosts/<host>/ by script/symlink

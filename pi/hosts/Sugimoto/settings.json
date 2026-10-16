@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.86.1",
+  "lastChangelogVersion": "1.2.0",
   "defaultProvider": "anthropic",
   "defaultModel": "claude-fable-5-1",
   "defaultThinkingLevel": "max",
@@ -12,7 +12,6 @@
   "packages": [
     "git:github.com/gjtorikian/agent-plugins",
     "npm:pi-subagents",
-    "npm:pi-mcp-adapter",
     "npm:@quintinshaw/pi-dynamic-workflows",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoresearch",

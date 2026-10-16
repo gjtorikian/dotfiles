@@ -9,7 +9,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5-1[1m]",
+  "model": "claude-fable-5-1",
   "hooks": {
     "PreToolUse": [
       {
@@ -60,7 +60,9 @@
     "swift-lsp@claude-plugins-official": true,
     "i-have-adhd@i-have-adhd": true,
     "annotations@gjtorikian-plugins": true,
-    "eli5@gjtorikian-plugins": true
+    "eli5@gjtorikian-plugins": true,
+    "artifacts@gjtorikian-plugins": true,
+    "interactive-explainer@gjtorikian-plugins": true
   },
   "extraKnownMarketplaces": {
     "sessions": {
