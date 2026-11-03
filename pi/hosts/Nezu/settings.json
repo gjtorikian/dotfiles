@@ -22,7 +22,8 @@
     "npm:@quintinshaw/pi-dynamic-workflows",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoresearch",
-    "git:github.com/DietrichGebert/ponytail"
+    "git:github.com/DietrichGebert/ponytail",
+    "npm:pi-next-cue"
   ],
   "theme": "nightowl"
 }

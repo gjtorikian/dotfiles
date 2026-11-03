@@ -2,7 +2,7 @@
 name: worker
 description: Implementation agent for normal tasks and approved oracle handoffs
 aliases: 'developer, coder, implementer, develop'
-model: baseten/zai-org/GLM-5.3
+model: cloudflare-ai-gateway/claude-opus-5-5
 thinking: max
 systemPromptMode: replace
 inheritProjectContext: true

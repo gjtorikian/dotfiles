@@ -19,3 +19,4 @@ pi/run-history.jsonl
 pi/models.json
 pi/settings.json
 pi/pr-cache.json
+pi/workflows/projects/

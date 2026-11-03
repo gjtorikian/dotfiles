@@ -8,7 +8,10 @@
     "sessionUrl": false
   },
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(gh pr merge *)"
+    ]
   },
   "model": "claude-fable-5-1",
   "hooks": {
@@ -63,7 +66,8 @@
     "annotations@gjtorikian-plugins": true,
     "eli5@gjtorikian-plugins": true,
     "artifacts@gjtorikian-plugins": true,
-    "interactive-explainer@gjtorikian-plugins": true
+    "interactive-explainer@gjtorikian-plugins": true,
+    "neon-postgres@neon": true
   },
   "extraKnownMarketplaces": {
     "sessions": {

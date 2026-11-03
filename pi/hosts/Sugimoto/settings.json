@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.2.0",
+  "lastChangelogVersion": "1.4.0",
   "defaultProvider": "anthropic",
   "defaultModel": "claude-fable-5-1",
   "defaultThinkingLevel": "max",
@@ -17,11 +17,40 @@
     "npm:pi-autoresearch",
     "git:github.com/DietrichGebert/ponytail",
     "/Users/gjtorikian/Developer/pi-workgraph",
-    "npm:@mhingston5/jev-cli"
+    "npm:@mhingston5/jev-cli",
+    "../../.local/share/riker/packages/riker",
+    "npm:pi-next-cue"
   ],
   "theme": "nightowl",
   "skills": [
     "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/git/skills",
     "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/github/skills"
-  ]
+  ],
+  "workgraph": {
+    "tiers": {
+      "planner": {
+        "model": "anthropic/claude-opus-*",
+        "thinking": "high"
+      },
+      "implementer": {
+        "model": "anthropic/claude-sonnet-*",
+        "thinking": "medium"
+      },
+      "reviewer": {
+        "model": "anthropic/claude-opus-*",
+        "thinking": "high"
+      },
+      "revision": {
+        "model": "anthropic/claude-sonnet-*",
+        "thinking": "medium"
+      }
+    },
+    "executors": {
+      "planner": "in-session",
+      "implementer": "pi-subagents",
+      "reviewer": "pi-subagents",
+      "revision": "pi-subagents"
+    },
+    "subagentsExecutor": true
+  }
 }
