@@ -18,5 +18,6 @@ pi/run-history.jsonl
 # Symlinked from pi/hosts/<host>/ by script/symlink
 pi/models.json
 pi/settings.json
+pi/workgraph.json
 pi/pr-cache.json
 pi/workflows/projects/

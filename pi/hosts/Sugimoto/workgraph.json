@@ -1,0 +1,39 @@
+{
+  "tiers": {
+    "planner": {
+      "model": "cloudflare-ai-gateway/claude-fable-*",
+      "thinking": "max"
+    },
+    "plan_critic": {
+      "model": "cloudflare-ai-gateway/gpt-6-astra",
+      "thinking": "max"
+    },
+    "implementer": {
+      "model": "cloudflare-ai-gateway/claude-opus-5-5",
+      "thinking": "xhigh"
+    },
+    "reviewer": {
+      "model": "openai-codex/gpt-6-astra",
+      "thinking": "max"
+    },
+    "revision": {
+      "model": "cloudflare-ai-gateway/claude-opus-5-5",
+      "thinking": "xhigh"
+    },
+    "verifier": {
+      "model": "openai-codex/gpt-6-astra",
+      "thinking": "xhigh"
+    },
+    "finalizer": {
+      "model": "cloudflare-ai-gateway/claude-opus-5-5",
+      "thinking": "high"
+    }
+  },
+  "executors": {
+    "planner": "in-session",
+    "implementer": "pi-subagents",
+    "reviewer": "pi-subagents",
+    "revision": "pi-subagents"
+  },
+  "subagentsExecutor": true
+}

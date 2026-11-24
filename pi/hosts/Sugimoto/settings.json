@@ -1,7 +1,7 @@
 {
-  "lastChangelogVersion": "1.4.0",
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-fable-5-1",
+  "lastChangelogVersion": "1.6.0",
+  "defaultProvider": "cloudflare-ai-gateway",
+  "defaultModel": "claude-fable-5-2",
   "defaultThinkingLevel": "max",
   "usageBudgets": {
     "day": 40000000,
@@ -19,38 +19,18 @@
     "/Users/gjtorikian/Developer/pi-workgraph",
     "npm:@mhingston5/jev-cli",
     "../../.local/share/riker/packages/riker",
-    "npm:pi-next-cue"
+    "npm:pi-next-cue",
+    "npm:remote-pi"
   ],
   "theme": "nightowl",
   "skills": [
     "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/git/skills",
     "/Users/gjtorikian/.dotfiles/pi/git/github.com/gjtorikian/agent-plugins/plugins/github/skills"
   ],
-  "workgraph": {
-    "tiers": {
-      "planner": {
-        "model": "anthropic/claude-opus-*",
-        "thinking": "high"
-      },
-      "implementer": {
-        "model": "anthropic/claude-sonnet-*",
-        "thinking": "medium"
-      },
-      "reviewer": {
-        "model": "anthropic/claude-opus-*",
-        "thinking": "high"
-      },
-      "revision": {
-        "model": "anthropic/claude-sonnet-*",
-        "thinking": "medium"
-      }
-    },
-    "executors": {
-      "planner": "in-session",
-      "implementer": "pi-subagents",
-      "reviewer": "pi-subagents",
-      "revision": "pi-subagents"
-    },
-    "subagentsExecutor": true
+  "extensionChangelogVersions": {
+    "{\"source\":\"npm:pi-subagents\",\"scope\":\"user\"}": "0.90.0",
+    "{\"source\":\"npm:pi-autoresearch\",\"scope\":\"user\"}": "1.9.0",
+    "{\"source\":\"/Users/gjtorikian/Developer/pi-workgraph\",\"scope\":\"user\"}": "0.3.1",
+    "{\"source\":\"../../.local/share/riker/packages/riker\",\"scope\":\"user\"}": "0.74.0"
   }
 }
