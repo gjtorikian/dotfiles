@@ -66,3 +66,6 @@ prompt pure
 
 # bun completions
 [ -s "/Users/gjtorikian/.bun/_bun" ] && source "/Users/gjtorikian/.bun/_bun"
+
+# Unity CLI
+. "/Users/gjtorikian/.unity/env"
